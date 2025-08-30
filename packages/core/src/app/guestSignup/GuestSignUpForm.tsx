@@ -1,9 +1,10 @@
-import { FormikProps, withFormik } from 'formik';
-import React, { FunctionComponent, memo } from 'react';
+import { type FormikProps, withFormik } from 'formik';
+import React, { type FunctionComponent, memo } from 'react';
 import { object, ref, string } from 'yup';
 
-import { PasswordRequirements } from '../customer';
-import { TranslatedString, withLanguage, WithLanguageProps } from '../locale';
+import { TranslatedString, withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+
+import { type PasswordRequirements } from '../customer';
 import { Button, ButtonVariant } from '../ui/button';
 import { Fieldset, Form, Legend } from '../ui/form';
 

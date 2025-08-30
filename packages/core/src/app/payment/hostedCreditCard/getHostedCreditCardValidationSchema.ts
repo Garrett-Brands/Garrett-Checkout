@@ -1,6 +1,6 @@
-import { LanguageService } from '@bigcommerce/checkout-sdk';
+import { type LanguageService } from '@bigcommerce/checkout-sdk';
 import { memoize } from '@bigcommerce/memoize';
-import { object, ObjectSchema, string } from 'yup';
+import { object, type ObjectSchema, string } from 'yup';
 
 export interface HostedCreditCardValidationSchemaOptions {
     language: LanguageService;
@@ -20,9 +20,9 @@ export interface HostedCreditCardValidationSchemaShape {
 export default memoize(function getHostedCreditCardValidationSchema({
     language,
 }: HostedCreditCardValidationSchemaOptions): ObjectSchema<HostedCreditCardValidationSchemaShape> {
-    return object({
-        hostedForm: object({
-            errors: object({
+    return object().shape<HostedCreditCardValidationSchemaShape>({
+        hostedForm: object().required().shape<HostedCreditCardValidationSchemaShape["hostedForm"]>({
+            errors: object().required().shape<HostedCreditCardValidationSchemaShape["hostedForm"]["errors"]>({
                 cardCode: string()
                     .test({
                         message: language.translate('payment.credit_card_cvv_required_error'),
@@ -45,10 +45,15 @@ export default memoize(function getHostedCreditCardValidationSchema({
                         test: (value) => value !== 'invalid_card_expiry',
                     }),
 
-                cardName: string().test({
-                    message: language.translate('payment.credit_card_name_required_error'),
-                    test: (value) => value !== 'required',
-                }),
+                cardName: string()
+                    .test({
+                        message: language.translate('payment.credit_card_name_required_error'),
+                        test: (value) => value !== 'required',
+                    })
+                    .test({
+                        message: language.translate('payment.credit_card_name_invalid_error'),
+                        test: (value) => value !== 'invalid_card_name',
+                    }),
 
                 cardNumber: string()
                     .test({

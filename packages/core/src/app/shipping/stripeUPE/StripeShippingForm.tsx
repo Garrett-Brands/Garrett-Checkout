@@ -1,4 +1,5 @@
 import {
+<<<<<<< HEAD
     Cart,
     Address,
     CheckoutParams,
@@ -9,22 +10,36 @@ import {
     RequestOptions,
     ShippingInitializeOptions,
     ShippingRequestOptions,
+=======
+    type Address,
+    type CheckoutParams,
+    type CheckoutSelectors,
+    type Consignment,
+    type Country,
+    type FormField,
+    type RequestOptions,
+    type ShippingInitializeOptions,
+    type ShippingRequestOptions,
+>>>>>>> staging
 } from '@bigcommerce/checkout-sdk';
-import { FormikProps, withFormik } from 'formik';
+import { type FormikProps } from 'formik';
 import { noop } from 'lodash';
-import React, { PureComponent, ReactNode } from 'react';
+import React, { PureComponent, type ReactNode } from 'react';
 import { lazy, object } from 'yup';
 
+import { withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+import { FormContext } from '@bigcommerce/checkout/ui';
+
 import {
-    AddressFormValues,
+    type AddressFormValues,
     getAddressFormFieldsValidationSchema,
     getTranslateAddressError,
     mapAddressToFormValues,
 } from '../../address';
-import CheckoutStepStatus from '../../checkout/CheckoutStepStatus';
+import type CheckoutStepStatus from '../../checkout/CheckoutStepStatus';
+import { withFormikExtended } from '../../common/form';
 import { getCustomFormFieldsValidationSchema } from '../../formFields';
-import { withLanguage, WithLanguageProps } from '../../locale';
-import { Fieldset, Form, FormContext } from '../../ui/form';
+import { Fieldset, Form } from '../../ui/form';
 import BillingSameAsShippingField from '../BillingSameAsShippingField';
 import hasSelectedShippingOptions from '../hasSelectedShippingOptions';
 import ShippingFormFooter from '../ShippingFormFooter';
@@ -45,6 +60,7 @@ export interface SingleShippingFormProps {
     shippingAddress?: Address;
     shouldShowOrderComments: boolean;
     step: CheckoutStepStatus;
+    isInitialValueLoaded: boolean;
     isStripeLoading?(): void;
     isStripeAutoStep?(): void;
     deinitialize(options: ShippingRequestOptions): Promise<CheckoutSelectors>;
@@ -81,6 +97,7 @@ class StripeShippingForm extends PureComponent<
         const {
             cart,
             cartHasChanged,
+            isInitialValueLoaded,
             isLoading,
             countries,
             isStripeLoading,
@@ -122,6 +139,7 @@ class StripeShippingForm extends PureComponent<
 
                 <ShippingFormFooter
                     cartHasChanged={cartHasChanged}
+                    isInitialValueLoaded={isInitialValueLoaded}
                     isLoading={isLoading || isUpdatingShippingData}
                     isMultiShippingMode={false}
                     shouldDisableSubmit={this.shouldDisableSubmit()}
@@ -179,7 +197,7 @@ class StripeShippingForm extends PureComponent<
 }
 
 export default withLanguage(
-    withFormik<SingleShippingFormProps & WithLanguageProps, SingleShippingFormValues>({
+    withFormikExtended<SingleShippingFormProps & WithLanguageProps, SingleShippingFormValues>({
         handleSubmit: (values, { props: { onSubmit } }) => {
             onSubmit(values);
         },

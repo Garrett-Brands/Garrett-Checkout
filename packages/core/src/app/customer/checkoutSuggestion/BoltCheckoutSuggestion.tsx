@@ -1,16 +1,16 @@
 import {
-    CheckoutSelectors,
-    CustomerInitializeOptions,
-    CustomerRequestOptions,
-    ExecutePaymentMethodCheckoutOptions,
+    type CheckoutSelectors,
+    type CustomerInitializeOptions,
+    type CustomerRequestOptions,
+    type ExecutePaymentMethodCheckoutOptions,
 } from '@bigcommerce/checkout-sdk';
 import { noop } from 'lodash';
-import React, { FunctionComponent, memo, useEffect, useState } from 'react';
+import React, { type FunctionComponent, memo, useEffect, useState } from 'react';
 
 import { useAnalytics } from '@bigcommerce/checkout/analytics';
+import { stopPropagation } from '@bigcommerce/checkout/dom-utils';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
 
-import { stopPropagation } from '../../common/dom';
-import { TranslatedString } from '../../locale';
 import { Button } from '../../ui/button';
 import { IconBolt } from '../../ui/icon';
 

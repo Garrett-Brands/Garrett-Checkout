@@ -1,10 +1,10 @@
-import { LanguageService } from '@bigcommerce/checkout-sdk';
+import { type LanguageService } from '@bigcommerce/checkout-sdk';
 import { memoize } from '@bigcommerce/memoize';
 import { cvv, number } from 'card-validator';
 import creditCardType from 'credit-card-type';
-import { object, ObjectSchema, string, StringSchema } from 'yup';
+import { object, type ObjectSchema, string, type StringSchema } from 'yup';
 
-import { CardInstrumentFieldsetValues } from '@bigcommerce/checkout/payment-integration-api';
+import { type CardInstrumentFieldsetValues } from '@bigcommerce/checkout/payment-integration-api';
 
 import { mapFromInstrumentCardType } from '../';
 
@@ -57,7 +57,7 @@ export default memoize(function getInstrumentValidationSchema({
             })
             .test({
                 message: language.translate('payment.credit_card_number_mismatch_error'),
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
                 test: (value = '') => value.slice(-instrumentLast4.length) === instrumentLast4,
             });
     }

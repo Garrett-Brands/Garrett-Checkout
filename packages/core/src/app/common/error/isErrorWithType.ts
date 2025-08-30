@@ -1,10 +1,10 @@
-import { RequestError } from '@bigcommerce/checkout-sdk';
+import { type RequestError } from '@bigcommerce/checkout-sdk';
 
 interface ErrorWithType extends RequestError {
     type: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 function hasOwnProperty<X extends {}, Y extends PropertyKey>(
     obj: X,
     key: Y,

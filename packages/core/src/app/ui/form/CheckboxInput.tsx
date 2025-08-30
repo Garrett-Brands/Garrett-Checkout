@@ -1,7 +1,7 @@
 import classNames from 'classnames';
-import React, { forwardRef, ReactNode, Ref } from 'react';
+import React, { forwardRef, type ReactNode, type Ref } from 'react';
 
-import Input, { InputProps } from './Input';
+import Input, { type InputProps } from './Input';
 import Label from './Label';
 
 export interface CheckboxInputProps extends InputProps {
@@ -9,11 +9,12 @@ export interface CheckboxInputProps extends InputProps {
     label: ReactNode;
     value: string;
     checked: boolean;
+    themeV2?: boolean;
 }
 
 const CheckboxInput = forwardRef(
     (
-        { additionalClassName, label, id, ...rest }: CheckboxInputProps,
+        { additionalClassName, label, id, testId, themeV2 = false, ...rest }: CheckboxInputProps,
         ref: Ref<HTMLInputElement>,
     ) => (
         <>
@@ -26,9 +27,10 @@ const CheckboxInput = forwardRef(
                 )}
                 id={id}
                 ref={ref}
+                testId={testId}
                 type="checkbox"
             />
-            <Label htmlFor={id}>{label}</Label>
+            <Label additionalClassName={themeV2 ? 'body-regular' : ''} htmlFor={id}>{label}</Label>
         </>
     ),
 );

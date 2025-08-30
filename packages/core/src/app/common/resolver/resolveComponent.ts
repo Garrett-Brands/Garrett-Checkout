@@ -1,4 +1,4 @@
-import { ComponentType } from 'react';
+import { type ComponentType } from 'react';
 
 import { isResolvableComponent } from '@bigcommerce/checkout/payment-integration-api';
 
@@ -23,6 +23,11 @@ export default function resolveComponent<TResolveId extends Record<string, unkno
             const result = { component: Component, matches: 0, default: false };
 
             for (const [key, value] of Object.entries(resolverId)) {
+                if (key in query && query[key] !== value) {
+                    result.matches = 0;
+                    break;
+                }
+
                 if (query[key] === value) {
                     result.matches++;
                 }
@@ -38,7 +43,7 @@ export default function resolveComponent<TResolveId extends Record<string, unkno
 
     const matched = results
         .sort((a, b) => b.matches - a.matches)
-        .filter((result) => result.matches > 0)[0];
+        .find((result) => result.matches > 0);
 
     return matched?.component ?? results.find((result) => result.default)?.component;
 }

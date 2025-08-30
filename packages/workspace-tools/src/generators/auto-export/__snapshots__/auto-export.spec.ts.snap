@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`autoExport() export matching members from files to another file 1`] = `
-"export { StrategyA } from '@bigcommerce/strategy-a';
-export { StrategyB } from '@bigcommerce/strategy-b';
-"
-`;
-
-exports[`autoExport() handles scenario where no matching member is found 1`] = `""`;

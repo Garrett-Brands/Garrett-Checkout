@@ -1,13 +1,25 @@
-import { AccountInstrument, BankInstrument } from '@bigcommerce/checkout-sdk';
+import {
+    type AccountInstrument,
+    type AchInstrument,
+    type BankInstrument,
+    type PayPalInstrument,
+} from '@bigcommerce/checkout-sdk';
 import classNames from 'classnames';
-import { FieldProps } from 'formik';
+import { type FieldProps } from 'formik';
 import { find, noop } from 'lodash';
-import React, { FunctionComponent, PureComponent, ReactNode, useCallback } from 'react';
+import React, { type FunctionComponent, useCallback, useEffect, useRef } from 'react';
 
 import { TranslatedString } from '@bigcommerce/checkout/locale';
-import { DropdownTrigger, IconNewAccount, IconPaypal, IconSize } from '@bigcommerce/checkout/ui';
+import {
+    DropdownTrigger,
+    IconAch,
+    IconNewAccount,
+    IconPaypal,
+    IconSepa,
+    IconSize,
+} from '@bigcommerce/checkout/ui';
 
-import { isBankAccountInstrument } from '../../guards';
+import { isAchInstrument, isBankAccountInstrument, isSepaInstrument } from '../../guards';
 
 interface AccountInstrumentUseNewButtonProps {
     className?: string;
@@ -33,7 +45,7 @@ const AccountInstrumentUseNewButton: FunctionComponent<AccountInstrumentUseNewBu
 
 interface AccountInstrumentMenuItemProps {
     className?: string;
-    instrument: AccountInstrument;
+    instrument: PayPalInstrument;
     testId?: string;
     onClick?(): void;
 }
@@ -61,6 +73,41 @@ const AccountInstrumentMenuItem: FunctionComponent<AccountInstrumentMenuItemProp
     );
 };
 
+interface AchInstrumentMenuItemProps {
+    className?: string;
+    instrument: AchInstrument;
+    testId?: string;
+    onClick?(): void;
+}
+
+const AchInstrumentMenuItem: FunctionComponent<AchInstrumentMenuItemProps> = ({
+    className,
+    instrument,
+    testId,
+    onClick,
+}) => {
+    return (
+        <button className={className} data-test={testId} onClick={onClick} type="button">
+            <div className="instrumentSelect-details">
+                <IconAch size={IconSize.Medium} />
+
+                <div className="instrumentSelect-bank">
+                    <div>
+                        <TranslatedString
+                            data={{ accountNumber: instrument.accountNumber }}
+                            id="payment.instrument_account_number_ending"
+                        />
+                    </div>
+                    <div>
+                        <TranslatedString id="payment.instrument_manage_table_header_routing_number_text" />
+                        : {instrument.issuer}
+                    </div>
+                </div>
+            </div>
+        </button>
+    );
+};
+
 interface BankInstrumentMenuItemProps {
     className?: string;
     instrument: BankInstrument;
@@ -68,15 +115,33 @@ interface BankInstrumentMenuItemProps {
     onClick?(): void;
 }
 
+const SepaInstrumentMenuItem: FunctionComponent<BankInstrumentMenuItemProps> = ({
+    className,
+    instrument,
+    testId,
+    onClick,
+}) => {
+    return (
+        <button className={className} data-test={testId} onClick={onClick} type="button">
+            <div className="instrumentSelect-details">
+                <IconSepa size={IconSize.Medium} />
+                <div className="instrumentSelect-bank">
+                    <div className="instrumentSelect-card">
+                        <TranslatedString id="payment.sepa_account_number" />:{' '}
+                        {instrument.accountNumber}
+                    </div>
+                </div>
+            </div>
+        </button>
+    );
+};
+
 const BankInstrumentMenuItem: FunctionComponent<BankInstrumentMenuItemProps> = ({
     className,
     instrument,
     testId,
     onClick,
 }) => {
-    const issuerName = `Issuer: ${instrument.issuer}`;
-    const accountNumber = `Account number ending in: ${instrument.accountNumber}`;
-
     return (
         <button className={className} data-test={testId} onClick={onClick} type="button">
             <div className="instrumentSelect-details">
@@ -84,8 +149,15 @@ const BankInstrumentMenuItem: FunctionComponent<BankInstrumentMenuItemProps> = (
                     // TODO: When we include new account instrument types we can
                     // abstract these icons in a similar way we did for credit cards.
                 }
-                <div className="instrumentSelect-card">{accountNumber}</div>
-                <div className="instrumentSelect-issuer">{issuerName}</div>
+                <div className="instrumentSelect-card">
+                    <TranslatedString
+                        data={{ accountNumber: instrument.accountNumber }}
+                        id="payment.instrument_account_number_ending"
+                    />
+                </div>
+                <div className="instrumentSelect-issuer">
+                    <TranslatedString id="payment.instrument_issuer" />: {instrument.issuer}
+                </div>
             </div>
         </button>
     );
@@ -104,6 +176,26 @@ const AccountInstrumentOption: FunctionComponent<AccountInstrumentOptionProps> =
     const handleClick = useCallback(() => {
         onClick(instrument.bigpayToken);
     }, [onClick, instrument]);
+
+    if (isAchInstrument(instrument)) {
+        return (
+            <AchInstrumentMenuItem
+                instrument={instrument}
+                onClick={handleClick}
+                testId="instrument-select-option"
+            />
+        );
+    }
+
+    if (isSepaInstrument(instrument)) {
+        return (
+            <SepaInstrumentMenuItem
+                instrument={instrument}
+                onClick={handleClick}
+                testId="instrument-select-option"
+            />
+        );
+    }
 
     return !isBankAccountInstrument(instrument) ? (
         <AccountInstrumentMenuItem
@@ -184,6 +276,28 @@ const AccountInstrumentSelectButton: FunctionComponent<AccountInstrumentSelectBu
         );
     }
 
+    if (isSepaInstrument(instrument)) {
+        return (
+            <SepaInstrumentMenuItem
+                className="instrumentSelect-button optimizedCheckout-form-select dropdown-button form-input"
+                instrument={instrument}
+                onClick={onClick}
+                testId={testId}
+            />
+        );
+    }
+
+    if (isAchInstrument(instrument)) {
+        return (
+            <AchInstrumentMenuItem
+                className="instrumentSelect-button optimizedCheckout-form-select dropdown-button form-input"
+                instrument={instrument}
+                onClick={onClick}
+                testId={testId}
+            />
+        );
+    }
+
     return !isBankAccountInstrument(instrument) ? (
         <AccountInstrumentMenuItem
             className="instrumentSelect-button optimizedCheckout-form-select dropdown-button form-input"
@@ -212,72 +326,72 @@ export interface AccountInstrumentSelectProps extends FieldProps<string> {
     onUseNewInstrument(): void;
 }
 
-class AccountInstrumentSelect extends PureComponent<AccountInstrumentSelectProps> {
-    componentDidMount() {
-        const { selectedInstrumentId } = this.props;
+const AccountInstrumentSelect: FunctionComponent<AccountInstrumentSelectProps> = ({
+    field,
+    form,
+    instruments,
+    onSelectInstrument,
+    onUseNewInstrument,
+    selectedInstrumentId,
+}) => {
+    const prevSelectedInstrumentIdRef = useRef(selectedInstrumentId);
 
+    const updateFieldValue = useCallback(
+        (instrumentId = '') => {
+            void form.setFieldValue(field.name, instrumentId);
+        },
+        [form, field.name],
+    );
+
+    useEffect(() => {
         // FIXME: Used setTimeout here because setFieldValue call doesnot set value if called before formik is properly mounted.
         //        This ensures that update Field value is called after formik has mounted.
         // See GitHub issue: https://github.com/jaredpalmer/formik/issues/930
-        setTimeout(() => this.updateFieldValue(selectedInstrumentId));
-    }
+        setTimeout(() => updateFieldValue(selectedInstrumentId));
 
-    componentDidUpdate(prevProps: Readonly<AccountInstrumentSelectProps>) {
-        const { selectedInstrumentId: prevSelectedInstrumentId } = prevProps;
-        const { selectedInstrumentId } = this.props;
+        return () => {
+            if (field.value === '' && selectedInstrumentId !== undefined) {
+                updateFieldValue();
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-        if (prevSelectedInstrumentId !== selectedInstrumentId) {
-            this.updateFieldValue(selectedInstrumentId);
+    useEffect(() => {
+        if (prevSelectedInstrumentIdRef.current !== selectedInstrumentId) {
+            // FIXME: Used setTimeout here because setFieldValue call doesnot set value if called before formik is properly mounted.
+            //        This ensures that update Field value is called after formik has mounted.
+            // See GitHub issue: https://github.com/jaredpalmer/formik/issues/930
+            setTimeout(() => updateFieldValue(selectedInstrumentId));
         }
-    }
 
-    componentWillUnmount() {
-        const { selectedInstrumentId, field } = this.props;
+        prevSelectedInstrumentIdRef.current = selectedInstrumentId;
+    }, [selectedInstrumentId, updateFieldValue]);
 
-        if (field.value === '' && selectedInstrumentId !== undefined) {
-            this.updateFieldValue();
-        }
-    }
+    const selectedInstrument = find(instruments, { bigpayToken: selectedInstrumentId });
+    const { value, ...otherFieldProps } = field;
 
-    render(): ReactNode {
-        const { field, instruments, onSelectInstrument, onUseNewInstrument, selectedInstrumentId } =
-            this.props;
-
-        const selectedInstrument = find(instruments, { bigpayToken: selectedInstrumentId });
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const { value, ...otherFieldProps } = field;
-
-        return (
-            <div className="instrumentSelect">
-                <DropdownTrigger
-                    dropdown={
-                        <AccountInstrumentMenu
-                            instruments={instruments}
-                            onSelectInstrument={onSelectInstrument}
-                            onUseNewInstrument={onUseNewInstrument}
-                            selectedInstrumentId={selectedInstrumentId}
-                        />
-                    }
-                >
-                    <AccountInstrumentSelectButton
-                        instrument={selectedInstrument}
-                        testId="instrument-select"
+    return (
+        <div className="instrumentSelect" data-test="account-instrument-select">
+            <DropdownTrigger
+                dropdown={
+                    <AccountInstrumentMenu
+                        instruments={instruments}
+                        onSelectInstrument={onSelectInstrument}
+                        onUseNewInstrument={onUseNewInstrument}
+                        selectedInstrumentId={selectedInstrumentId}
                     />
+                }
+            >
+                <AccountInstrumentSelectButton
+                    instrument={selectedInstrument}
+                    testId="instrument-select"
+                />
 
-                    {
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        <input type="hidden" value={value || ''} {...otherFieldProps} />
-                    }
-                </DropdownTrigger>
-            </div>
-        );
-    }
-
-    private updateFieldValue(instrumentId = ''): void {
-        const { form, field } = this.props;
-
-        form.setFieldValue(field.name, instrumentId);
-    }
-}
+                <input type="hidden" value={value || ''} {...otherFieldProps} />
+            </DropdownTrigger>
+        </div>
+    );
+};
 
 export default AccountInstrumentSelect;

@@ -1,4 +1,4 @@
-import { GoogleAddressFieldType } from './googleAutocompleteTypes';
+import { type GoogleAddressFieldType } from './googleAutocompleteTypes';
 
 export default class AddressSelector {
     protected _address: google.maps.GeocoderAddressComponent[] | undefined;
@@ -7,7 +7,7 @@ export default class AddressSelector {
     constructor(googlePlace: google.maps.places.PlaceResult) {
         const { address_components, name } = googlePlace;
 
-        this._name = name;
+        this._name = name ?? '';
         this._address = address_components;
     }
 
@@ -48,7 +48,7 @@ export default class AddressSelector {
         access: Exclude<keyof google.maps.GeocoderAddressComponent, 'types'>,
     ): string {
         const element =
-            this._address && this._address.find((field) => field.types.indexOf(type) !== -1);
+            this._address && this._address.find((field) => field.types.includes(type));
 
         if (element) {
             return element[access];

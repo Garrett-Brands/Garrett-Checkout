@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import {
     Address,
     Cart,
@@ -796,3 +797,9 @@ class Checkout extends Component<
 }
 
 export default withAnalytics(withLanguage(withCheckout(mapToCheckoutProps)(Checkout)));
+=======
+import CheckoutIntermediate from './CheckoutIntermediate';
+
+export default CheckoutIntermediate;
+export { CheckoutProps, CheckoutState, WithCheckoutProps } from './CheckoutPage';
+>>>>>>> staging

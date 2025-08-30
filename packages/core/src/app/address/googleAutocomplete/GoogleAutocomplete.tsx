@@ -1,13 +1,13 @@
 import { noop } from 'lodash';
-import React, { PureComponent, ReactNode } from 'react';
+import React, { PureComponent, type ReactNode } from 'react';
 
-import { Autocomplete, AutocompleteItem } from '../../ui/autocomplete';
+import { Autocomplete, type AutocompleteItem } from '../../ui/autocomplete';
 
-import { GoogleAutocompleteOptionTypes } from './googleAutocompleteTypes';
+import { type GoogleAutocompleteOptionTypes } from './googleAutocompleteTypes';
 import './GoogleAutocomplete.scss';
 import GoogleAutocompleteService from './GoogleAutocompleteService';
 
-interface GoogleAutocompleteProps {
+export interface GoogleAutocompleteProps {
     initialValue?: string;
     componentRestrictions?: google.maps.places.ComponentRestrictions;
     fields?: string[];
@@ -45,7 +45,8 @@ class GoogleAutocomplete extends PureComponent<GoogleAutocompleteProps, GoogleAu
 
         return (
             <Autocomplete
-                initialHighlightedIndex={0}
+                defaultHighlightedIndex={-1}
+                initialHighlightedIndex={-1}
                 initialValue={initialValue}
                 inputProps={{
                     ...inputProps,
@@ -111,7 +112,7 @@ class GoogleAutocomplete extends PureComponent<GoogleAutocompleteProps, GoogleAu
                     types: types || ['geocode'],
                     componentRestrictions,
                 },
-                (results) => this.setState({ items: this.toAutocompleteItems(results) }),
+                (results) => this.setState({ items: this.toAutocompleteItems(results ?? undefined) }),
             );
         });
     }

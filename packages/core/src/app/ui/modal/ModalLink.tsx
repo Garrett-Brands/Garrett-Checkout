@@ -1,16 +1,18 @@
-import React, { FunctionComponent, ReactNode, useCallback } from 'react';
+import React, { type FunctionComponent, type ReactNode, useCallback } from 'react';
 
-import { preventDefault } from '../../common/dom';
-import { TranslatedString } from '../../locale';
+import { preventDefault } from '@bigcommerce/checkout/dom-utils';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+
 import { Button, ButtonSize } from '../button';
 
 import Modal from './Modal';
 import './ModalLink.scss';
-import ModalTrigger, { ModalTriggerModalProps } from './ModalTrigger';
+import ModalTrigger, { type ModalTriggerModalProps } from './ModalTrigger';
 
 export interface ModalLinkProps {
     header: ReactNode;
     body: ReactNode;
+    children?: ReactNode;
 }
 
 const ModalLink: FunctionComponent<ModalLinkProps> = ({ children, body, header }) => {

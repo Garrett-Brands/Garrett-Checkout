@@ -1,28 +1,31 @@
-import {
+import { getScriptLoader } from '@bigcommerce/script-loader';
+import type {
     BrowserOptions,
-    captureException,
-    Event,
-    init,
-    Integrations,
+    ErrorEvent,
+    EventHint,
+    Exception,
     SeverityLevel,
     StackFrame,
-    withScope,
 } from '@sentry/browser';
-import { RewriteFrames } from '@sentry/integrations';
-import { EventHint, Exception } from '@sentry/types';
+
+import {
+    ErrorLevelType,
+    type ErrorLogger,
+    type ErrorMeta,
+    type ErrorTags,
+} from '@bigcommerce/checkout/error-handling-utils';
 
 import computeErrorCode from './computeErrorCode';
-import ConsoleErrorLogger from './ConsoleErrorLogger';
-import ErrorLogger, { ErrorLevelType, ErrorMeta, ErrorTags } from './ErrorLogger';
+import type ConsoleErrorLogger from './ConsoleErrorLogger';
 import NoopErrorLogger from './NoopErrorLogger';
 
 const FILENAME_PREFIX = 'app://';
-const SAMPLE_RATE = 0.1;
 
 export interface SentryErrorLoggerOptions {
     consoleLogger?: ConsoleErrorLogger;
     errorTypes?: string[];
     publicPath?: string;
+    sampleRate?: number;
 }
 
 export enum SeverityLevelEnum {
@@ -35,28 +38,43 @@ export enum SeverityLevelEnum {
 export default class SentryErrorLogger implements ErrorLogger {
     private consoleLogger: ErrorLogger;
     private publicPath: string;
+    private dsn: string;
+    private loaderPromise?: Promise<void>;
 
     constructor(config: BrowserOptions, options?: SentryErrorLoggerOptions) {
-        const { consoleLogger = new NoopErrorLogger(), publicPath = '' } = options || {};
+        const {
+            consoleLogger = new NoopErrorLogger(),
+            publicPath = '',
+            sampleRate = 0.1,
+        } = options || {};
 
         this.consoleLogger = consoleLogger;
         this.publicPath = publicPath;
+        this.dsn = config.dsn || '';
 
-        init({
-            sampleRate: SAMPLE_RATE,
-            beforeSend: this.handleBeforeSend,
-            denyUrls: [...(config.denyUrls || []), 'polyfill~checkout', 'sentry~checkout', 'convertcart'],
-            integrations: [
-                new Integrations.GlobalHandlers({
-                    onerror: false,
-                    onunhandledrejection: true,
-                }),
-                new RewriteFrames({
-                    iteratee: this.handleRewriteFrame,
-                }),
-            ],
-            ...config,
-        });
+        window.sentryOnLoad = async () => {
+            Sentry.init({
+                sampleRate,
+                beforeSend: this.handleBeforeSend.bind(this),
+                denyUrls: [
+                    ...(config.denyUrls || []),
+                    'polyfill~checkout',
+                ],
+                integrations: [
+                    Sentry.globalHandlersIntegration({
+                        onerror: false,
+                        onunhandledrejection: true,
+                    }),
+                ],
+                ...config,
+            });
+
+            const rewriteFramesIntegration = await Sentry.lazyLoadIntegration('rewriteFramesIntegration');
+
+            Sentry.addIntegration(rewriteFramesIntegration({
+                iteratee: this.handleRewriteFrame.bind(this),
+            }));
+        };
     }
 
     log(
@@ -67,23 +85,33 @@ export default class SentryErrorLogger implements ErrorLogger {
     ): void {
         this.consoleLogger.log(error, tags, level);
 
-        withScope((scope) => {
+        this.loadSentry().then(() => {
             const { errorCode = computeErrorCode(error) } = tags || {};
 
-            if (errorCode) {
-                scope.setTags({ errorCode });
-            }
-
-            scope.setLevel(this.mapToSentryLevel(level));
-
-            if (payload) {
-                scope.setExtras(payload);
-            }
-
-            scope.setFingerprint(['{{ default }}']);
-
-            captureException(error);
+            Sentry.captureException(error, {
+                tags: { errorCode },
+                level: this.mapToSentryLevel(level),
+                extra: payload,
+                fingerprint: ['{{ default }}'],
+            });
         });
+    }
+
+    private loadSentry(): Promise<void> {
+        if (this.loaderPromise) {
+            return this.loaderPromise;
+        }
+
+        const key = /https:\/\/(.+)@.+\//.exec(this.dsn)?.[1] ?? '';
+
+        this.loaderPromise = getScriptLoader().loadScript(`https://js.sentry-cdn.com/${key}.min.js`, {
+            attributes: {
+                crossorigin: 'anonymous',
+            },
+            async: false,
+        });
+
+        return this.loaderPromise;
     }
 
     private mapToSentryLevel(level: ErrorLevelType): SeverityLevel {
@@ -111,10 +139,7 @@ export default class SentryErrorLogger implements ErrorLogger {
      * sufficient for us because some stores have customisation code built on top of our code, resulting in a stacktrace
      * whose topmost frame is ours but frames below it are not.
      */
-    private shouldReportExceptions(
-        exceptions: Exception[],
-        originalException: unknown,
-    ): boolean {
+    private shouldReportExceptions(exceptions: Exception[], originalException: unknown): boolean {
         // Ignore exceptions that are not an instance of Error because they are most likely not thrown by our own code,
         // as we have a lint rule that prevents us from doing so. Although these exceptions don't actually have a
         // stacktrace, meaning that the condition below should theoretically cover the scenario, but we still need this
@@ -129,18 +154,12 @@ export default class SentryErrorLogger implements ErrorLogger {
             }
 
             return exception.stacktrace.frames.every((frame) =>
-                frame.filename?.startsWith(FILENAME_PREFIX),
+                frame.filename?.startsWith(FILENAME_PREFIX) || frame.filename?.startsWith(this.publicPath),
             );
         });
     }
 
-    private handleBeforeSend: (event: Event, hint?: EventHint) => Event | null = (event, hint) => {
-        if (
-            event.breadcrumbs?.filter((breadcrumb) => breadcrumb.data?.url?.includes('convertcart'))
-        ) {
-            return null;
-        }
-
+    private handleBeforeSend: (event: ErrorEvent, hint: EventHint) => ErrorEvent | null = (event, hint) => {
         if (event.exception) {
             if (
                 !this.shouldReportExceptions(

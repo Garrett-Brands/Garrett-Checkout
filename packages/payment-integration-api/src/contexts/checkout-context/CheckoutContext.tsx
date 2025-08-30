@@ -1,4 +1,4 @@
-import { CheckoutSelectors, CheckoutService } from '@bigcommerce/checkout-sdk';
+import { type CheckoutSelectors, type CheckoutService } from '@bigcommerce/checkout-sdk';
 import { createContext, useContext } from 'react';
 
 export interface CheckoutContextProps {
@@ -6,7 +6,7 @@ export interface CheckoutContextProps {
     checkoutState: CheckoutSelectors;
 }
 
-export const CheckoutContext = createContext<CheckoutContextProps | undefined>(undefined);
+const CheckoutContext = createContext<CheckoutContextProps | undefined>(undefined);
 
 export function useCheckout() {
     const context = useContext(CheckoutContext);
@@ -17,3 +17,5 @@ export function useCheckout() {
 
     return context;
 }
+
+export default CheckoutContext;

@@ -1,7 +1,15 @@
+<<<<<<< HEAD
 import React, { PureComponent, ReactNode } from 'react';
 import { Consignment, Cart } from '@bigcommerce/checkout-sdk';
+=======
+import { ExtensionRegion } from '@bigcommerce/checkout-sdk';
+import React, { type FunctionComponent } from 'react';
 
-import { TranslatedString } from '../locale';
+import { Extension } from '@bigcommerce/checkout/checkout-extension';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { useThemeContext } from '@bigcommerce/checkout/ui';
+>>>>>>> staging
+
 import { OrderComments } from '../orderComments';
 import { Alert, AlertType } from '../ui/alert';
 import { Button, ButtonVariant } from '../ui/button';
@@ -23,7 +31,9 @@ export interface ShippingFormFooterProps {
     shouldShowOrderComments: boolean;
     shouldShowShippingOptions?: boolean;
     shouldDisableSubmit: boolean;
+    isInitialValueLoaded: boolean;
     isLoading: boolean;
+<<<<<<< HEAD
     consignments: Consignment[];
     shipDate: Date;
     setShipDate: Function;
@@ -133,17 +143,65 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps, Shipping
                             <Legend>
                                 <TranslatedString id="shipping.shipping_method_label" />
                             </Legend>
+=======
+    shippingFormRenderTimestamp?: number;
+}
 
-                            {cartHasChanged && (
-                                <Alert type={AlertType.Error}>
-                                    <strong>
-                                        <TranslatedString id="shipping.cart_change_error" />
-                                    </strong>
-                                </Alert>
-                            )}
-                        </>
-                    }
+const ShippingFormFooter: FunctionComponent<ShippingFormFooterProps> = ({
+    cartHasChanged,
+    isMultiShippingMode,
+    shouldShowOrderComments,
+    shouldShowShippingOptions = true,
+    shouldDisableSubmit,
+    isInitialValueLoaded,
+    isLoading,
+    shippingFormRenderTimestamp,
+}) => {
+    const { themeV2 } = useThemeContext();
+
+    return (
+        <>
+            <Extension region={ExtensionRegion.ShippingShippingAddressFormAfter} />
+            <Fieldset
+                id="checkout-shipping-options"
+                legend={
+                    <>
+                        <Legend themeV2={themeV2}>
+                            <TranslatedString id="shipping.shipping_method_label" />
+                        </Legend>
+>>>>>>> staging
+
+                        {cartHasChanged && (
+                            <Alert type={AlertType.Error}>
+                                <strong>
+                                    <TranslatedString id="shipping.cart_change_error" />
+                                </strong>
+                            </Alert>
+                        )}
+                    </>
+                }
+            >
+                <ShippingOptions
+                    isInitialValueLoaded={isInitialValueLoaded}
+                    isMultiShippingMode={isMultiShippingMode}
+                    isUpdatingAddress={isLoading}
+                    shippingFormRenderTimestamp={shippingFormRenderTimestamp}
+                    shouldShowShippingOptions={shouldShowShippingOptions}
+                />
+            </Fieldset>
+
+            {shouldShowOrderComments && <OrderComments />}
+
+            <div className="form-actions">
+                <Button
+                    className={themeV2 ? 'body-bold' : ''}
+                    disabled={shouldDisableSubmit}
+                    id="checkout-shipping-continue"
+                    isLoading={isLoading}
+                    type="submit"
+                    variant={ButtonVariant.Primary}
                 >
+<<<<<<< HEAD
                     { surchargeIsActive &&
                         <ShippingBanner
                             className='shipping-surcharge-banner'
@@ -243,5 +301,13 @@ class ShippingFormFooter extends PureComponent<ShippingFormFooterProps, Shipping
         );
     }
 }
+=======
+                    <TranslatedString id="common.continue_action" />
+                </Button>
+            </div>
+        </>
+    );
+};
+>>>>>>> staging
 
 export default ShippingFormFooter;

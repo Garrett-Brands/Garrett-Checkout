@@ -1,102 +1,106 @@
-import { Placement } from 'popper.js';
-import React, { Component, MouseEventHandler, ReactNode } from 'react';
+import { type Placement } from '@popperjs/core';
+import React, { type MouseEventHandler, type ReactElement, type ReactNode, useCallback, useEffect, useState } from 'react';
 import { Manager, Popper, Reference } from 'react-popper';
+
+import {
+    CHECKOUT_ROOT_NODE_ID,
+    MICRO_APP_NG_CHECKOUT_ROOT_NODE_ID,
+} from '@bigcommerce/checkout/payment-integration-api';
 
 export interface DropdownTriggerProps {
     placement?: Placement;
     dropdown: ReactNode;
+    children?: ReactNode;
 }
 
-export interface DropdownTriggerState {
-    shouldShow: boolean;
-}
+const DropdownTrigger = ({
+    placement = 'bottom-start',
+    dropdown,
+    children
+}: DropdownTriggerProps): ReactElement => {
+    const [shouldShow, setShouldShow] = useState(false);
 
-export default class DropdownTrigger extends Component<DropdownTriggerProps, DropdownTriggerState> {
-    static defaultProps = {
-        placement: 'bottom-start',
-    };
-
-    state: Readonly<DropdownTriggerState> = {
-        shouldShow: false,
-    };
-
-    componentWillUnmount(): void {
-        document.removeEventListener('click', this.handleClose);
-    }
-
-    render() {
-        const { children, placement, dropdown } = this.props;
-        const { shouldShow } = this.state;
-
+    const getRootElement = useCallback(() => {
         return (
-            <Manager>
-                <Reference>
-                    {({ ref }) => (
-                        <div className="dropdownTrigger" onClick={this.handleClick} ref={ref}>
-                            {children}
-                        </div>
-                    )}
-                </Reference>
-
-                <Popper
-                    modifiers={{
-                        hide: { enabled: false },
-                        flip: { enabled: false },
-                        preventOverflow: { enabled: false },
-                    }}
-                    placement={placement}
-                >
-                    {({ ref, style }) =>
-                        !shouldShow ? null : (
-                            <div
-                                className="dropdownMenu"
-                                ref={ref}
-                                style={{
-                                    ...style,
-                                    width: '100%',
-                                    zIndex: 1,
-                                }}
-                            >
-                                {dropdown}
-                            </div>
-                        )
-                    }
-                </Popper>
-            </Manager>
+            document.getElementById(CHECKOUT_ROOT_NODE_ID) ||
+            document.getElementById(MICRO_APP_NG_CHECKOUT_ROOT_NODE_ID)
         );
-    }
+    }, []);
 
-    private handleClick: MouseEventHandler<HTMLElement> = (event) => {
-        const { shouldShow } = this.state;
-
-        if (shouldShow) {
-            this.handleClose(event.nativeEvent);
-        } else {
-            this.handleOpen(event.nativeEvent);
-        }
-    };
-
-    private handleOpen: (event: MouseEvent) => void = () => {
-        const { shouldShow } = this.state;
-
-        if (shouldShow) {
-            return;
-        }
-
-        this.setState({ shouldShow: true }, () => {
-            document.addEventListener('click', this.handleClose);
-        });
-    };
-
-    private handleClose: (event: MouseEvent) => void = () => {
-        const { shouldShow } = this.state;
-
+    const handleClose = useCallback(() => {
         if (!shouldShow) {
             return;
         }
 
-        this.setState({ shouldShow: false }, () => {
-            document.removeEventListener('click', this.handleClose);
-        });
-    };
-}
+        setShouldShow(false);
+    }, [shouldShow]);
+
+    const handleOpen = useCallback(() => {
+        if (shouldShow) {
+            return;
+        }
+
+        setShouldShow(true);
+    }, [shouldShow]);
+
+    const handleClick: MouseEventHandler<HTMLElement> = useCallback(() => {
+        if (shouldShow) {
+            handleClose();
+        } else {
+            handleOpen();
+        }
+    }, [shouldShow, handleClose, handleOpen]);
+
+    useEffect(() => {
+        const rootElement = getRootElement();
+
+        if (shouldShow) {
+            rootElement?.addEventListener('click', handleClose);
+        } else {
+            rootElement?.removeEventListener('click', handleClose);
+        }
+
+        return () => {
+            rootElement?.removeEventListener('click', handleClose);
+        };
+    }, [shouldShow, handleClose, getRootElement]);
+
+    return (
+        <Manager>
+            <Reference>
+                {({ ref }) => (
+                    <div className="dropdownTrigger" onClick={handleClick} ref={ref}>
+                        {children}
+                    </div>
+                )}
+            </Reference>
+
+            <Popper
+                modifiers={[
+                    { name: 'hide', enabled: false },
+                    { name: 'flip', enabled: false },
+                    { name: 'preventOverflow', enabled: false },
+                ]}
+                placement={placement}
+            >
+                {({ ref, style }) =>
+                    !shouldShow ? null : (
+                        <div
+                            className="dropdownMenu"
+                            ref={ref}
+                            style={{
+                                ...style,
+                                width: '100%',
+                                zIndex: 1,
+                            }}
+                        >
+                            {dropdown}
+                        </div>
+                    )
+                }
+            </Popper>
+        </Manager>
+    );
+};
+
+export default DropdownTrigger;

@@ -1,6 +1,6 @@
-import { AccountInstrument } from '@bigcommerce/checkout-sdk';
-import { FieldProps } from 'formik';
-import React, { FunctionComponent, memo, useCallback } from 'react';
+import { type AccountInstrument } from '@bigcommerce/checkout-sdk';
+import { type FieldProps } from 'formik';
+import React, { type FunctionComponent, memo, useCallback } from 'react';
 
 import { TranslatedHtml, TranslatedString } from '@bigcommerce/checkout/locale';
 import {
@@ -8,7 +8,7 @@ import {
     Fieldset,
     Legend,
     ModalTrigger,
-    ModalTriggerModalProps,
+    type ModalTriggerModalProps,
 } from '@bigcommerce/checkout/ui';
 
 import { AccountInstrumentSelect } from '../AccountInstrumentSelect';
@@ -59,6 +59,7 @@ const AccountInstrumentFieldset: FunctionComponent<AccountInstrumentFieldsetProp
                     <TranslatedString id="payment.account_instrument_text" />
                 </Legend>
             }
+            testId="account-instrument-fieldset"
         >
             <ModalTrigger modal={renderModal}>
                 {({ onClick }) => (
@@ -71,7 +72,7 @@ const AccountInstrumentFieldset: FunctionComponent<AccountInstrumentFieldsetProp
             <BasicFormField name="instrumentId" render={renderInput} />
 
             {instruments.length === 0 && (
-                <div className="instrumentSelect-note">
+                <div className="instrumentSelect-note" data-test="instrument-select-note">
                     <TranslatedHtml id="payment.account_instrument_new_shipping_address" />
                 </div>
             )}

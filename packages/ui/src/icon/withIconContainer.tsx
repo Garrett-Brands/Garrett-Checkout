@@ -1,6 +1,6 @@
 // @ts-nocheck
 import classNames from 'classnames';
-import React, { ComponentType, memo } from 'react';
+import React, { type ComponentType, memo } from 'react';
 
 export enum IconSize {
     Regular = 'regular',

@@ -2,10 +2,14 @@
 // CHECKOUT CART (Component)
 // =============================================================================
 
+.optimizedCheckout-orderSummary.cart {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+}
+
 .cart {
     border: container("border");
     border-radius: $checkoutCart-borderRadius;
-    box-shadow: container("dropShadow");
     display: none;
     margin: spacing("double") 0 spacing("single");
     min-height: $checkoutCart-minHeight;
@@ -101,6 +105,12 @@
     text-align: right;
 }
 
+.cart-priceItem-before-value {
+    text-decoration: line-through;
+    color: color("greys");
+    margin-right: spacing("quarter");
+}
+
 .cart-priceItem-postFix {
     color: color("greys");
     display: table-row;
@@ -118,6 +128,10 @@
         font-size: fontSize("larger");
         font-weight: fontWeight("bold");
         line-height: 1.2;
+
+        &.header {
+            font-size: fontSize("large");
+        }
     }
 }
 

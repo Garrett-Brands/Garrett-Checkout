@@ -1,17 +1,24 @@
 import classNames from 'classnames';
 import { noop } from 'lodash';
-import React, { FunctionComponent, KeyboardEvent, MouseEvent, ReactNode, useCallback } from 'react';
+import React, {
+    type FunctionComponent,
+    type KeyboardEvent,
+    type MouseEvent,
+    type ReactNode,
+    useCallback,
+} from 'react';
 import ReactModal from 'react-modal';
-import { Omit } from 'utility-types';
+import { type Omit } from 'utility-types';
+
+import { preventDefault } from '@bigcommerce/checkout/dom-utils';
 
 import { IconClose } from '../icon';
-import { preventDefault } from '../utils/dom';
 
 export type ModalProps = Omit<
     ReactModal.Props,
     'bodyOpenClassName' | 'className' | 'closeTimeoutMS' | 'overlayClassName'
 > & {
-    children: ReactNode;
+    children?: ReactNode;
     closeButtonLabel?: string | ReactNode;
     footer?: ReactNode;
     header?: ReactNode;
@@ -73,7 +80,9 @@ const Modal: FunctionComponent<ModalProps> = ({
                         href="#"
                         onClick={preventDefault(handleClose)}
                     >
-                        {closeButtonLabel && <span className="is-srOnly">{closeButtonLabel}</span>}
+                        {Boolean(closeButtonLabel) && (
+                            <span className="is-srOnly">{closeButtonLabel}</span>
+                        )}
 
                         <IconClose />
                     </a>

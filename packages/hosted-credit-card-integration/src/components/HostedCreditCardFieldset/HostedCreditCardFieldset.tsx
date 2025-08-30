@@ -1,4 +1,5 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import classNames from 'classnames';
+import React, { type FunctionComponent, type ReactNode } from 'react';
 
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 import { Fieldset, Legend } from '@bigcommerce/checkout/ui';
@@ -34,7 +35,12 @@ const HostedCreditCardFieldset: FunctionComponent<HostedCreditCardFieldsetProps>
             </Legend>
         }
     >
-        <div className="form-ccFields">
+        <div
+            className={classNames('form-ccFields', {
+                'form-ccFields--without-card-name': !cardNameId,
+                'form-ccFields--without-card-code': !cardCodeId,
+            })}
+        >
             <HostedCreditCardNumberField
                 appearFocused={focusedFieldType === 'cardNumber'}
                 id={cardNumberId}

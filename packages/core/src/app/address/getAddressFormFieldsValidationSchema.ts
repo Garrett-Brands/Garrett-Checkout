@@ -1,11 +1,11 @@
-import { FormField, LanguageService } from '@bigcommerce/checkout-sdk';
+import { type FormField, type LanguageService } from '@bigcommerce/checkout-sdk';
 import { memoize } from 'lodash';
-import { ObjectSchema } from 'yup';
+import { type ObjectSchema } from 'yup';
 
 import {
-    FormFieldValues,
+    type FormFieldValues,
     getFormFieldsValidationSchema,
-    TranslateValidationErrorFunction,
+    type TranslateValidationErrorFunction,
 } from '../formFields';
 
 export interface AddressFormFieldsValidationSchemaOptions {
@@ -50,7 +50,7 @@ export function getTranslateAddressError(
         }
 
         if (type === 'min' && min) {
-            return language.translate(`address.custom_max_error`, { label, min });
+            return language.translate(`address.custom_min_error`, { label, min });
         }
 
         if (type === 'invalid') {

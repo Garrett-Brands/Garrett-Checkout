@@ -1,1 +1,1 @@
-export * from './lib/afterpay-integration';
+export { default as AfterpayPaymentMethod } from './AfterpayPaymentMethod';

@@ -1,18 +1,18 @@
-import { FormField } from '@bigcommerce/checkout-sdk';
+import { type FormField } from '@bigcommerce/checkout-sdk';
 import { memoize } from '@bigcommerce/memoize';
 import {
     array,
-    ArraySchema,
+    type ArraySchema,
     date,
     number,
-    NumberSchema,
+    type NumberSchema,
     object,
-    ObjectSchema,
-    Schema,
+    type ObjectSchema,
+    type Schema,
     string,
 } from 'yup';
 
-import { DynamicFormFieldType } from '../ui/form';
+import { DynamicFormFieldType } from '@bigcommerce/checkout/ui';
 
 export type TranslateValidationErrorFunction = (
     validationType: 'max' | 'min' | 'required' | 'invalid',
@@ -53,7 +53,6 @@ export default memoize(function getCustomFormFieldsValidationSchema({
                         schema[name] = date()
                             // Transform NaN values to undefined to avoid empty string (empty input) to fail date
                             // validation when it's optional
-                            .strict(true)
                             .nullable(true)
                             .transform((value, originalValue) =>
                                 originalValue === '' ? null : value,
@@ -62,12 +61,11 @@ export default memoize(function getCustomFormFieldsValidationSchema({
                         schema[name] = number()
                             // Transform NaN values to undefined to avoid empty string (empty input) to fail number
                             // validation when it's optional
-                            .strict(true)
                             .transform((value) => (isNaN(value) ? undefined : value));
 
                         maxValue = typeof max === 'number' ? max : undefined;
                         minValue = typeof min === 'number' ? min : undefined;
-                    } else if (fieldType === DynamicFormFieldType.checkbox) {
+                    } else if (fieldType === DynamicFormFieldType.CHECKBOX) {
                         schema[name] = array();
                     } else {
                         schema[name] = string();
@@ -91,7 +89,7 @@ export default memoize(function getCustomFormFieldsValidationSchema({
                         const requiredErrorMessage = translate('required', { name, label });
 
                         schema[name] =
-                            fieldType === DynamicFormFieldType.checkbox
+                            fieldType === DynamicFormFieldType.CHECKBOX
                                 ? (schema[name] as ArraySchema<string>).min(1, requiredErrorMessage)
                                 : (schema[name] as ArraySchema<string>).required(
                                       requiredErrorMessage,
@@ -99,6 +97,7 @@ export default memoize(function getCustomFormFieldsValidationSchema({
                     }
 
                     return schema;
+                    // eslint-disable-next-line @typescript-eslint/prefer-reduce-type-parameter
                 }, {} as { [key: string]: Schema<any> }),
         ).nullable(true),
     }) as ObjectSchema<CustomFormFieldValues>;

@@ -21,7 +21,7 @@
     }
 
     .form-fieldset {
-        margin-bottom: spacing("single");
+        margin-bottom: #{spacing("half") + spacing("third")};
 
         &:last-child {
             margin-bottom: 0;
@@ -40,6 +40,7 @@
 
     .form-field {
         position: relative;
+        margin: 0 0 spacing("half");
 
         &:last-child {
             margin-bottom: 0;
@@ -54,12 +55,13 @@
             padding-left: $input-horizontalPadding;
             padding-right: $input-horizontalPadding;
             padding-top: $input-verticalPadding * 1.5;
-        }
 
-        .floating-input:not(:focus),
-        .floating-select:not(:focus),
-        .floating-textarea {
-            border-color: $floating-label-border-color;
+            &.floating-form-field-input {
+                color: $color-black;
+                font-family: $fontFamily-montserrat;
+                font-size: $fontSize-smallest;
+                font-weight: $fontWeight-normal;
+            }
         }
 
         .floating-textarea {
@@ -90,6 +92,18 @@
                 font-size: $floating-label-font-size--default;
                 vertical-align: baseline;
             }
+
+            &.floating-form-field-label {
+                color: $color-secondaryDarkest;
+                font-family: $fontFamily-montserrat;
+                font-size: $fontSize-smallest;
+                font-weight: $fontWeight-medium;
+                margin-top: spacing("eighth");
+
+                small {
+                    font-size: $fontSize-smallest;
+                }
+            }
         }
 
         .react-datepicker__tab-loop + .floating-label,
@@ -108,6 +122,26 @@
             small {
                 font-size: fontSize("tiny");
             }
+
+            &.floating-form-field-label{
+                color: $color-secondaryDarkest;
+                font-family: $fontFamily-montserrat;
+                font-size: $fontSize-tiny;
+                font-weight: $fontWeight-medium;
+                margin-top: 0;
+
+                small {
+                    font-size: $fontSize-tiny;
+                }
+            }
+        }
+    }
+
+    .form-field:not(.form-field--error) {
+        .floating-input:not(:focus),
+        .floating-select:not(:focus),
+        .floating-textarea {
+            border-color: $floating-label-border-color;
         }
     }
 
@@ -137,7 +171,7 @@
     }
 
     .form-actions {
-        margin: #{spacing("single") + spacing("half")} 0;
+        margin: #{spacing("single") + spacing("quarter")} 0;
         padding: 0;
 
         .button:first-child {
@@ -185,7 +219,7 @@
         background-color: $legend-bg;
         color: $header-font-color;
         font-weight: $legend-font-weight;
-        padding: spacing("half") 0;
+        padding: 0 0 spacing("half") 0;
         width: auto;
     }
 
@@ -213,92 +247,4 @@
         padding: $input-verticalPadding $select-paddingRight $input-verticalPadding $input-horizontalPadding;
     }
     // scss-lint:enable ImportantRule
-
-    .loading-skeleton {
-        animation: grows 150ms ease-out;
-        will-change: max-height;
-    }
-
-    @keyframes grows {
-        0% {
-            max-height: $floating-label-input-height * 4;
-            overflow: hidden;
-        }
-
-        100% {
-            max-height: 2000px;
-            overflow: visible;
-        }
-    }
-
-    .address-form-heading-skeleton {
-        background-color: $loading-skeleton-button-bg-color;
-        border-radius: $global-radius;
-        height: $h3-font-size;
-        margin: 0.75rem 0;
-        width: 12rem;
-    }
-
-    .address-form-skeleton,
-    .customer-skeleton {
-        .customerEmail-body {
-            div:first-child {
-                margin-bottom: $form-verticalSpacing;
-            }
-
-            div.subscription-skeleton {
-                height: spacing("single");
-                margin-bottom: 0;
-                width: 66%;
-            }
-        }
-
-        .customerEmail-action {
-            margin: #{spacing("single") + spacing("half")} 0;
-        }
-
-        .skeleton-container {
-            background-color: $formBody-backgroundColor;
-            border: $input-border-style $input-border-width $floating-label-border-color;
-            border-radius: $global-radius;
-            height: $floating-label-input-height;
-            margin-bottom: $floating-form-field-spacing;
-            margin-left: 0;
-            padding: $loading-skeleton-input-padding;
-
-            .input-skeleton,
-            .input-skeleton::before {
-                height: 100%;
-                position: relative;
-                width: 100%;
-            }
-
-            .input-skeleton::before {
-                animation: $loading-skeleton-animation;
-                animation-timing-function: $loading-skeleton-timing;
-                background: $loading-skeleton-button-bg-color;
-                border-radius: $global-radius;
-                content: ' ';
-                display: block;
-                left: 0;
-                position: absolute;
-                top: 0;
-                will-change: $loading-skeleton-will-change;
-            }
-        }
-
-        .skeleton-container.button-skeleton {
-            background: $loading-skeleton-button-bg-color;
-            border: none;
-        }
-
-        .name-fields-skeleton {
-            display: flex;
-            gap: $floating-form-field-spacing;
-
-            .skeleton-container {
-                flex-basis: 50%;
-            }
-        }
-    }
 }

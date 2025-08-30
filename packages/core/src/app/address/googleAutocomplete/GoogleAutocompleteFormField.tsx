@@ -1,10 +1,12 @@
-import { FormField as FormFieldType } from '@bigcommerce/checkout-sdk';
+import { type FormField as FormFieldType } from '@bigcommerce/checkout-sdk';
 import classNames from 'classnames';
-import { FieldProps } from 'formik';
-import React, { FunctionComponent, memo, useCallback, useMemo } from 'react';
+import { type FieldProps } from 'formik';
+import React, { type FunctionComponent, memo, useCallback, useMemo } from 'react';
 
-import { TranslatedString } from '../../locale';
-import { AutocompleteItem } from '../../ui/autocomplete';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { useThemeContext } from '@bigcommerce/checkout/ui';
+
+import { type AutocompleteItem } from '../../ui/autocomplete';
 import { FormField, Label } from '../../ui/form';
 import {
     getAddressFormFieldInputId,
@@ -27,7 +29,7 @@ export interface GoogleAutocompleteFormFieldProps {
 }
 
 const GoogleAutocompleteFormField: FunctionComponent<GoogleAutocompleteFormFieldProps> = ({
-    field: { default: placeholder, name },
+    field: { default: placeholder, name, maxLength },
     countryCode,
     supportedCountries,
     parentFieldName,
@@ -40,6 +42,7 @@ const GoogleAutocompleteFormField: FunctionComponent<GoogleAutocompleteFormField
 }) => {
     const fieldName = parentFieldName ? `${parentFieldName}.${name}` : name;
 
+    const { themeV2 } = useThemeContext();
     const labelContent = useMemo(() => <TranslatedString id="address.address_line_1_label" />, []);
 
     const labelId = getAddressFormFieldLabelId(name);
@@ -49,13 +52,15 @@ const GoogleAutocompleteFormField: FunctionComponent<GoogleAutocompleteFormField
             className: classNames(
                 'form-input optimizedCheckout-form-input',
                 { 'floating-input': isFloatingLabelEnabled },
+                { 'floating-form-field-input': themeV2 },
             ),
             id: getAddressFormFieldInputId(name),
             'aria-labelledby': labelId,
             placeholder: isFloatingLabelEnabled ? ' ' : placeholder,
             labelText: isFloatingLabelEnabled ? labelContent : null,
+            maxLength: maxLength || undefined,
         }),
-        [name, labelId, placeholder, labelContent],
+        [name, labelId, placeholder, labelContent, maxLength],
     );
 
     const renderInput = useCallback(
@@ -66,7 +71,7 @@ const GoogleAutocompleteFormField: FunctionComponent<GoogleAutocompleteFormField
                 initialValue={field.value}
                 inputProps={inputProps}
                 isAutocompleteEnabled={
-                    countryCode ? supportedCountries.indexOf(countryCode) > -1 : false
+                    countryCode ? supportedCountries.includes(countryCode) : false
                 }
                 nextElement={nextElement}
                 onChange={onChange}
@@ -87,22 +92,26 @@ const GoogleAutocompleteFormField: FunctionComponent<GoogleAutocompleteFormField
     );
 
     const renderLabel = isFloatingLabelEnabled ? null : (
-        <Label htmlFor={inputProps.id} id={labelId} isFloatingLabelEnabled={isFloatingLabelEnabled}>
+        <Label additionalClassName={themeV2 ? 'body-regular' : ''} htmlFor={inputProps.id} id={labelId}
+            isFloatingLabelEnabled={isFloatingLabelEnabled}>
             {labelContent}
         </Label>
     );
 
     return (
-        <div className={classNames(
+        <div
+            className={classNames(
                 'dynamic-form-field dynamic-form-field--addressLineAutocomplete',
                 { 'floating-form-field': isFloatingLabelEnabled },
             )}
+            data-test="google-autocomplete-form-field"
         >
             <FormField
                 input={renderInput}
                 isFloatingLabelEnabled={isFloatingLabelEnabled}
                 label={renderLabel}
                 name={fieldName}
+                themeV2={themeV2}
             />
         </div>
     );

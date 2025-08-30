@@ -1,4 +1,4 @@
-import { LanguageService, PaymentMethod } from '@bigcommerce/checkout-sdk';
+import { type LanguageService, type PaymentMethod } from '@bigcommerce/checkout-sdk';
 import { capitalize, get } from 'lodash';
 
 import PaymentMethodId from './PaymentMethodId';
@@ -24,8 +24,6 @@ export default function getPaymentMethodName(
 
         if (!name) {
             name = capitalize(
-                // FIXME: I'm not entirely sure why we have to do this. But for some
-                // reason this is required for Masterpass provided by Square.
                 get(method, 'initializationData.paymentData.cardData.digital_wallet_type') ||
                     method.method ||
                     method.id,
@@ -45,7 +43,6 @@ export function getTranslatedPaymentMethodName(
             [PaymentMethodId.Afterpay]: language.translate('payment.afterpay_name_text'),
             [PaymentMethodId.AmazonPay]: language.translate('payment.amazon_name_text'),
             [PaymentMethodId.Bolt]: language.translate('payment.bolt_name_text'),
-            [PaymentMethodType.Chasepay]: language.translate('payment.chasepay_name_text'),
             [PaymentMethodId.Clearpay]: language.translate('payment.clearpay_name_text'),
             [PaymentMethodType.GooglePay]: language.translate('payment.google_pay_name_text'),
             [PaymentMethodId.Klarna]: language.translate('payment.klarna_name_text'),

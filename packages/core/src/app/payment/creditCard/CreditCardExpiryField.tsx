@@ -1,8 +1,9 @@
 import { memoizeOne } from '@bigcommerce/memoize';
-import { FieldProps } from 'formik';
-import React, { ChangeEvent, FunctionComponent, memo, useCallback, useMemo } from 'react';
+import { type FieldProps } from 'formik';
+import React, { type ChangeEvent, type FunctionComponent, memo, useCallback, useMemo } from 'react';
 
-import { TranslatedString, withLanguage, WithLanguageProps } from '../../locale';
+import { TranslatedString, withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+
 import { FormField, TextInput } from '../../ui/form';
 
 import formatCreditCardExpiryDate from './formatCreditCardExpiryDate';

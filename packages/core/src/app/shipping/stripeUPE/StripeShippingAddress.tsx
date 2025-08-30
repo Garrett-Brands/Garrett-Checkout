@@ -1,20 +1,21 @@
 import {
-    Address,
-    CheckoutSelectors,
-    Consignment,
-    Country,
-    ShippingInitializeOptions,
-    ShippingRequestOptions,
-    StripeShippingEvent
+    type Address,
+    type CheckoutSelectors,
+    type Consignment,
+    type Country,
+    type ShippingInitializeOptions,
+    type ShippingRequestOptions,
+    type StripeShippingEvent
 } from '@bigcommerce/checkout-sdk';
 import { memoizeOne } from '@bigcommerce/memoize';
-import React, { FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
+import React, { type FunctionComponent, memo, useCallback, useEffect, useState } from 'react';
 
-import CheckoutStepStatus from '../../checkout/CheckoutStepStatus';
-import { getAppliedStyles } from '../../common/dom';
+import { getAppliedStyles } from '@bigcommerce/checkout/dom-utils';
+
+import type CheckoutStepStatus from '../../checkout/CheckoutStepStatus';
 import getRecommendedShippingOption from '../getRecommendedShippingOption';
 import hasSelectedShippingOptions from '../hasSelectedShippingOptions';
-import { SingleShippingFormValues } from '../SingleShippingForm';
+import { type SingleShippingFormValues } from '../SingleShippingForm';
 
 import StripeShippingAddressDisplay from './StripeShippingAddressDisplay';
 import StripeStateMapper from './StripeStateMapper';
@@ -117,9 +118,7 @@ const StripeShippingAddress: FunctionComponent<StripeShippingAddressProps> = (pr
             }
 
             const names = name?.split(' ');
-
-            // @ts-ignore
-            const country = availableShippingList?.find(country => country.code === address.country).name;
+            const country = availableShippingList?.find(country => country.code === address.country)?.name;
             const state = StripeStateMapper(address.country, address.state);
             const shippingValue = {
                 firstName: firstName || names[0],
@@ -213,7 +212,6 @@ const StripeShippingAddress: FunctionComponent<StripeShippingAddressProps> = (pr
                 <div
                     className="optimizedCheckout-form-input"
                     id={ `${containerId}--input` }
-                    placeholder="1111"
                 >
                     <div
                         className="form-field--error"

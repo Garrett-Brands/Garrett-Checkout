@@ -1,19 +1,20 @@
-import { SignInEmail } from '@bigcommerce/checkout-sdk';
-import { FormikProps, withFormik } from 'formik';
+import { type SignInEmail } from '@bigcommerce/checkout-sdk';
+import { type FormikProps, withFormik } from 'formik';
 import { noop } from 'lodash';
-import React, { FunctionComponent, memo, useMemo } from 'react';
+import React, { type FunctionComponent, memo, useMemo } from 'react';
 
 import {
     TranslatedHtml,
     TranslatedLink,
     TranslatedString,
     withLanguage,
-    WithLanguageProps,
-} from '../locale';
+    type WithLanguageProps,
+} from '@bigcommerce/checkout/locale';
+import { LoadingSpinner } from '@bigcommerce/checkout/ui';
+
 import { Alert, AlertType } from '../ui/alert';
 import { Button, ButtonVariant } from '../ui/button';
 import { Form } from '../ui/form';
-import { LoadingSpinner } from '../ui/loading';
 import { Modal, ModalHeader } from '../ui/modal';
 
 import EmailField from './EmailField';
@@ -158,7 +159,6 @@ const EmailLoginForm: FunctionComponent<
                 <p>
                     <TranslatedHtml
                         data={{
-                            email: formEmail,
                             minutes: Math.round(expiry / 60),
                         }}
                         id={

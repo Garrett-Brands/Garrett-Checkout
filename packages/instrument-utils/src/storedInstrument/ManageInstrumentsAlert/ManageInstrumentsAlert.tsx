@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo } from 'react';
+import React, { type FunctionComponent, memo } from 'react';
 
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 import { Alert, AlertType } from '@bigcommerce/checkout/ui';
@@ -8,7 +8,6 @@ export interface ManageInstrumentsAlertProps {
 }
 
 const ManageInstrumentsAlert: FunctionComponent<ManageInstrumentsAlertProps> = ({ error }) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { status } = error;
 
     if (status === 401) {

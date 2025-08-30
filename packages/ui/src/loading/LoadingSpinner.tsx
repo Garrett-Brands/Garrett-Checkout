@@ -1,4 +1,4 @@
-import React, { FunctionComponent, memo } from 'react';
+import React, { type FunctionComponent, memo } from 'react';
 
 export interface LoadingSpinnerProps {
     isLoading: boolean;
@@ -10,7 +10,12 @@ const LoadingSpinner: FunctionComponent<LoadingSpinnerProps> = ({ isLoading }) =
     }
 
     return (
-        <div className="loadingSpinner loadingOverlay-container" style={{ height: 100 }}>
+        <div
+            aria-busy="true"
+            className="loadingSpinner loadingOverlay-container"
+            role="status"
+            style={{ height: 100 }}
+        >
             <div className="loadingOverlay optimizedCheckout-overlay" />
         </div>
     );

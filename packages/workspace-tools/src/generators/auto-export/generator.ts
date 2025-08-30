@@ -1,5 +1,5 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { generateFiles, readProjectConfiguration, Tree } from '@nrwl/devkit';
+import { generateFiles, readProjectConfiguration, type Tree } from '@nx/devkit';
 import { basename, join, parse } from 'path';
 
 import autoExport from './auto-export';
@@ -13,7 +13,7 @@ export interface AutoExportGeneratorOptions {
 export default async function autoExportGenerator(tree: Tree, options: AutoExportGeneratorOptions) {
     const libraryRoot = readProjectConfiguration(tree, options.projectName).root;
 
-    // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment, global-require, import/no-dynamic-require
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, import/no-dynamic-require
     const config = require(join(tree.root, libraryRoot, options.config));
 
     if (!isAutoExportConfig(config)) {

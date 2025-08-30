@@ -1,37 +1,39 @@
 import {
-    CheckoutSelectors,
-    EmbeddedCheckoutMessenger,
-    EmbeddedCheckoutMessengerOptions,
-    Order,
-    ShopperConfig,
-    StoreConfig,
+    type CheckoutSelectors,
+    type EmbeddedCheckoutMessenger,
+    type EmbeddedCheckoutMessengerOptions,
+    type Order,
+    type ShopperConfig,
+    type StoreConfig,
 } from '@bigcommerce/checkout-sdk';
 import classNames from 'classnames';
 import DOMPurify from 'dompurify';
-import React, { Component, lazy, ReactNode } from 'react';
+import React, { Component, lazy, type ReactNode } from 'react';
 
-import { AnalyticsContextProps } from '@bigcommerce/checkout/analytics';
+import { type AnalyticsContextProps } from '@bigcommerce/checkout/analytics';
+import { type ErrorLogger } from '@bigcommerce/checkout/error-handling-utils';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+import { CartSummarySkeleton, LazyContainer, OrderConfirmationPageSkeleton } from '@bigcommerce/checkout/ui';
 
 import { withAnalytics } from '../analytics';
-import { CheckoutContextProps, withCheckout } from '../checkout';
-import { ErrorLogger, ErrorModal } from '../common/error';
-import { retry } from '../common/utility';
+import { withCheckout } from '../checkout';
+import { ErrorModal } from '../common/error';
+import { isExperimentEnabled, retry } from '../common/utility';
 import { getPasswordRequirementsFromConfig } from '../customer';
-import { EmbeddedCheckoutStylesheet, isEmbedded } from '../embeddedCheckout';
+import { type EmbeddedCheckoutStylesheet, isEmbedded } from '../embeddedCheckout';
 import {
-    CreatedCustomer,
+    type CreatedCustomer,
     GuestSignUpForm,
     PasswordSavedSuccessAlert,
     SignedUpSuccessAlert,
-    SignUpFormValues,
+    type SignUpFormValues,
 } from '../guestSignup';
 import {
     AccountCreationFailedError,
     AccountCreationRequirementsError,
 } from '../guestSignup/errors';
-import { TranslatedString } from '../locale';
 import { Button, ButtonVariant } from '../ui/button';
-import { LazyContainer, LoadingSpinner } from '../ui/loading';
 import { MobileView } from '../ui/responsive';
 
 import getPaymentInstructions from './getPaymentInstructions';
@@ -120,7 +122,7 @@ class OrderConfirmation extends Component<
         const { order, config, isLoadingOrder } = this.props;
 
         if (!order || !config || isLoadingOrder()) {
-            return <LoadingSpinner isLoading={true} />;
+            return <OrderConfirmationPageSkeleton />;
         }
 
         const paymentInstructions = getPaymentInstructions(order);
@@ -141,6 +143,7 @@ class OrderConfirmation extends Component<
                         <ThankYouHeader name={order.billingAddress.firstName} />
 
                         <OrderStatus
+                            config={config}
                             order={order}
                             supportEmail={orderEmail}
                             supportPhoneNumber={storePhoneNumber}
@@ -216,16 +219,21 @@ class OrderConfirmation extends Component<
             return null;
         }
 
-        const { currency, shopperCurrency } = config;
+        const { currency, shopperCurrency, checkoutSettings } = config;
+
+        const isShippingDiscountDisplayEnabled = isExperimentEnabled(
+            checkoutSettings,
+            'PROJECT-6643.enable_shipping_discounts_in_orders',
+        );
 
         return (
             <MobileView>
                 {(matched) => {
                     if (matched) {
                         return (
-                            <LazyContainer>
+                            <LazyContainer loadingSkeleton={<></>}>
                                 <OrderSummaryDrawer
-                                    {...mapToOrderSummarySubtotalsProps(order)}
+                                    {...mapToOrderSummarySubtotalsProps(order, isShippingDiscountDisplayEnabled)}
                                     headerLink={
                                         <PrintLink className="modal-header-link cart-modal-link" />
                                     }
@@ -239,18 +247,18 @@ class OrderConfirmation extends Component<
                     }
 
                     return (
-                        <aside className="layout-cart">
-                            <LazyContainer>
+                        <LazyContainer loadingSkeleton={<CartSummarySkeleton />}>
+                            <aside className="layout-cart">
                                 <OrderSummary
                                     headerLink={<PrintLink />}
-                                    {...mapToOrderSummarySubtotalsProps(order)}
+                                    {...mapToOrderSummarySubtotalsProps(order, isShippingDiscountDisplayEnabled)}
                                     lineItems={order.lineItems}
                                     shopperCurrency={shopperCurrency}
                                     storeCurrency={currency}
                                     total={order.orderAmount}
                                 />
-                            </LazyContainer>
-                        </aside>
+                            </aside>
+                        </LazyContainer>
                     );
                 }}
             </MobileView>

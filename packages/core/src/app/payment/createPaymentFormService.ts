@@ -1,19 +1,25 @@
-import { FormikContext } from 'formik';
+import { type FormikContextType } from 'formik';
 
 import {
-    PaymentFormService,
-    PaymentFormValues,
+    type PaymentFormService,
+    type PaymentFormValues,
 } from '@bigcommerce/checkout/payment-integration-api';
-import { FormContextType } from '@bigcommerce/checkout/ui';
+import { type FormContextType } from '@bigcommerce/checkout/ui';
 
-import { PaymentContextProps } from './PaymentContext';
+import { type PaymentContextProps } from './PaymentContext';
 
 export default function createPaymentFormService(
-    formikContext: FormikContext<PaymentFormValues>,
+    formikContext: FormikContextType<PaymentFormValues>,
     formContext: FormContextType,
     paymentContext: PaymentContextProps,
 ): PaymentFormService {
-    const { setFieldTouched, setFieldValue, submitForm, validateForm, values } = formikContext;
+    const {
+        setFieldTouched,
+        setFieldValue,
+        submitForm,
+        validateForm,
+        values,
+    } = formikContext;
 
     const { isSubmitted, setSubmitted } = formContext;
 
@@ -25,10 +31,11 @@ export default function createPaymentFormService(
     return {
         disableSubmit,
         getFieldValue,
+        getFormValues: () => values,
         hidePaymentSubmitButton,
         isSubmitted: () => isSubmitted,
-        setFieldTouched,
-        setFieldValue,
+        setFieldTouched: setFieldTouched as PaymentFormService['setFieldTouched'],
+        setFieldValue: setFieldValue as PaymentFormService['setFieldValue'],
         setSubmit,
         setSubmitted,
         setValidationSchema,

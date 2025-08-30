@@ -1,24 +1,25 @@
 import {
-    Address,
-    CheckoutRequestBody,
-    CheckoutSelectors,
-    Country,
-    Customer,
-    FormField,
+    type Address,
+    type CheckoutRequestBody,
+    type CheckoutSelectors,
+    type Country,
+    type Customer,
+    type FormField,
 } from '@bigcommerce/checkout-sdk';
 import { noop } from 'lodash';
-import React, { Component, ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
 import { AddressFormSkeleton } from '@bigcommerce/checkout/ui';
 
 import { isEqualAddress, mapAddressFromFormValues } from '../address';
-import { CheckoutContextProps, withCheckout } from '../checkout';
-import { EMPTY_ARRAY, isFloatingLabelEnabled } from '../common/utility';
-import { TranslatedString } from '../locale';
+import { withCheckout } from '../checkout';
+import { EMPTY_ARRAY, isExperimentEnabled, isFloatingLabelEnabled } from '../common/utility';
 import { getShippableItemsCount } from '../shipping';
 import { Legend } from '../ui/form';
 
-import BillingForm, { BillingFormValues } from './BillingForm';
+import BillingForm, { type BillingFormValues } from './BillingForm';
 import getBillingMethodId from './getBillingMethodId';
 
 export interface BillingProps {
@@ -42,6 +43,7 @@ export interface WithCheckoutBillingProps {
     billingAddress?: Address;
     methodId?: string;
     isFloatingLabelEnabled?: boolean;
+    themeV2?: boolean;
     getFields(countryCode?: string): FormField[];
     initialize(): Promise<CheckoutSelectors>;
     updateAddress(address: Partial<Address>): Promise<CheckoutSelectors>;
@@ -63,6 +65,7 @@ class Billing extends Component<BillingProps & WithCheckoutBillingProps> {
     }
 
     render(): ReactNode {
+<<<<<<< HEAD
         const {
             updateAddress,
             isInitializing,
@@ -71,12 +74,15 @@ class Billing extends Component<BillingProps & WithCheckoutBillingProps> {
             giftMessage,
             ...props
         } = this.props;
+=======
+        const { updateAddress, isInitializing, themeV2, ...props } = this.props;
+>>>>>>> staging
 
         return (
             <AddressFormSkeleton isLoading={isInitializing}>
                 <div className="checkout-form">
                     <div className="form-legend-container">
-                        <Legend testId="billing-address-heading">
+                        <Legend testId="billing-address-heading" themeV2={themeV2}>
                             <TranslatedString id="billing.billing_address_heading" />
                         </Legend>
                     </div>
@@ -167,13 +173,9 @@ function mapToBillingProps({
         return null;
     }
 
-    const { enableOrderComments, googleMapsApiKey, features } = config.checkoutSettings;
+    const { enableOrderComments, googleMapsApiKey } = config.checkoutSettings;
 
-    const countriesWithAutocomplete = ['US', 'CA', 'AU', 'NZ'];
-
-    if (features['CHECKOUT-4183.checkout_google_address_autocomplete_uk']) {
-        countriesWithAutocomplete.push('GB');
-    }
+    const countriesWithAutocomplete = ['US', 'CA', 'AU', 'NZ', 'GB'];
 
     return {
         billingAddress: getBillingAddress(),
@@ -191,6 +193,7 @@ function mapToBillingProps({
         updateAddress: checkoutService.updateBillingAddress,
         updateCheckout: checkoutService.updateCheckout,
         isFloatingLabelEnabled: isFloatingLabelEnabled(config.checkoutSettings),
+        themeV2: isExperimentEnabled(config.checkoutSettings, 'CHECKOUT-7962.update_font_style_on_checkout_page')
     };
 }
 

@@ -1,4 +1,4 @@
-import { AddressKeyMap } from './address';
+import { type AddressKeyMap } from './address';
 
 export const ADDRESS_FIELD_IDS: AddressKeyMap = {
     address1: 'addressLine1',
@@ -9,7 +9,7 @@ export const ADDRESS_FIELD_IDS: AddressKeyMap = {
 };
 
 export function getAddressFormFieldLegacyName(name: string): string {
-    return `${ADDRESS_FIELD_IDS[name] || name}`;
+    return ADDRESS_FIELD_IDS[name] || name;
 }
 
 export function getAddressFormFieldInputId(name: string): string {

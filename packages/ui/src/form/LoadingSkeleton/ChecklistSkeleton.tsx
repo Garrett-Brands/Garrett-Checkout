@@ -1,7 +1,7 @@
 import classNames from 'classnames';
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
-import { LoadingSkeleton, LoadingSkeletonProps } from './LoadingSkeleton';
+import { LoadingSkeleton, type LoadingSkeletonProps } from './LoadingSkeleton';
 
 interface ChecklistSkeletonProps {
     additionalClassName?: string;
@@ -17,12 +17,7 @@ const ChecklistSkeleton: FunctionComponent<LoadingSkeletonProps & ChecklistSkele
     const content = [];
 
     for (let i = 0; i < rows; i += 1) {
-        content.push(
-            <div className="skeleton-container" key={`checklist-skeleton-item${i}`}>
-                <div className="checklist-skeleton-circle" />
-                <div className="checklist-skeleton-rectangle" />
-            </div>,
-        );
+        content.push(<div key={`checklist-skeleton-item${i}`} />);
     }
 
     const skeleton = (

@@ -1,9 +1,12 @@
 import {
-    AccountInstrument,
-    BankInstrument,
-    CardInstrument,
-    PaymentInstrument,
+    type AccountInstrument,
+    type BankInstrument,
+    type CardInstrument,
+    type PaymentInstrument,
 } from '@bigcommerce/checkout-sdk';
+
+import { getYear } from '@bigcommerce/checkout/test-mocks';
+
 import { UntrustedShippingCardVerificationType } from './CardInstrumentFieldset';
 
 export function getInstruments(): PaymentInstrument[] {
@@ -14,7 +17,7 @@ export function getInstruments(): PaymentInstrument[] {
             iin: '11111111',
             last4: '4321',
             expiryMonth: '02',
-            expiryYear: '2025',
+            expiryYear: getYear(1),
             brand: 'visa',
             trustedShippingAddress: true,
             defaultInstrument: true,
@@ -28,8 +31,8 @@ export function getInstruments(): PaymentInstrument[] {
             iin: '11222333',
             last4: '4444',
             expiryMonth: '10',
-            expiryYear: '2024',
-            brand: 'american_express',
+            expiryYear: getYear(-1),
+            brand: 'american-express',
             trustedShippingAddress: false,
             defaultInstrument: false,
             method: 'card',
@@ -88,7 +91,7 @@ export function getCardInstrument(): CardInstrument {
         iin: '11111111',
         last4: '4321',
         expiryMonth: '02',
-        expiryYear: '2025',
+        expiryYear: getYear(1),
         brand: 'test',
         trustedShippingAddress: true,
         defaultInstrument: true,

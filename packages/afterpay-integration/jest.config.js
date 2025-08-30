@@ -2,13 +2,11 @@ module.exports = {
   displayName: 'afterpay-integration',
   preset: '../../jest.preset.js',
   globals: {
-    'ts-jest': {
-      tsconfig: '<rootDir>/tsconfig.spec.json',
-    }
+      'ts-jest': {
+          tsconfig: '<rootDir>/tsconfig.spec.json',
+          diagnostics: false,
+      }
   },
-  transform: {
-    '^.+\\.[tj]sx?$': 'ts-jest'
-  },
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+  setupFilesAfterEnv: ['../../jest-setup.ts'],
   coverageDirectory: '../../coverage/packages/afterpay-integration'
 };

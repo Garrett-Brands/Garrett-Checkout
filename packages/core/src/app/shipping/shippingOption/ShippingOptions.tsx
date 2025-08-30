@@ -1,17 +1,21 @@
-import { Cart, CheckoutSelectors, Consignment } from '@bigcommerce/checkout-sdk';
+import { type Cart, type CheckoutSelectors, type Consignment } from '@bigcommerce/checkout-sdk';
 import { map, sortBy, uniq } from 'lodash';
 import { createSelector } from 'reselect';
 
-import { CheckoutContextProps, withCheckout } from '../../checkout';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+
+import { withCheckout } from '../../checkout';
 import getShippableLineItems from '../getShippableLineItems';
 import getShippingMethodId from '../getShippingMethodId';
 
 import ShippingOptionsForm from './ShippingOptionsForm';
 
 export interface ShippingOptionsProps {
+    isInitialValueLoaded: boolean;
     isMultiShippingMode: boolean;
     isUpdatingAddress?: boolean;
     shouldShowShippingOptions: boolean;
+    shippingFormRenderTimestamp?: number;
 }
 
 export interface WithCheckoutShippingOptionsProps {
@@ -32,8 +36,8 @@ const subscribeToConsignmentsSelector = createSelector(
     },
 );
 
-const isLoadingSelector = createSelector(
-    (_: CheckoutSelectors, { isUpdatingAddress }: ShippingOptionsProps) => isUpdatingAddress,
+export const isLoadingSelector = createSelector(
+    (_: CheckoutSelectors, isUpdatingAddress?: boolean) => isUpdatingAddress,
     ({ statuses }: CheckoutSelectors) => statuses.isLoadingShippingOptions,
     ({ statuses }: CheckoutSelectors) => statuses.isSelectingShippingOption,
     ({ statuses }: CheckoutSelectors) => statuses.isUpdatingConsignment,
@@ -87,14 +91,14 @@ export function mapToShippingOptions(
     }
 
     const consignments = sortConsignments(cart, getConsignments() || []);
-    const methodId = getShippingMethodId(checkout);
+    const methodId = getShippingMethodId(checkout, config);
     const { shippingQuoteFailedMessage } = config.checkoutSettings;
 
     return {
         cart,
         consignments,
         invalidShippingMessage: shippingQuoteFailedMessage,
-        isLoading: isLoadingSelector(checkoutState, props),
+        isLoading: isLoadingSelector(checkoutState, props.isUpdatingAddress),
         isSelectingShippingOption,
         methodId,
         selectShippingOption: checkoutService.selectConsignmentShippingOption,

@@ -1,7 +1,8 @@
-import { CheckoutContextProps } from '../checkout';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+
 import { EMPTY_ARRAY } from '../common/utility';
 
-import { RedeemableProps } from './Redeemable';
+import { type RedeemableProps } from './Redeemable';
 
 export default function mapToRedeemableProps(
     context: CheckoutContextProps,

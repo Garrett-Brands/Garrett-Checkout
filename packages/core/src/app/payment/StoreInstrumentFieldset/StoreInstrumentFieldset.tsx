@@ -1,8 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
-import { CheckoutContextProps, withCheckout } from '../../checkout';
-import { connectFormik, ConnectFormikProps } from '../../common/form';
-import { Fieldset } from '../../ui/form';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+
+import { withCheckout } from '../../checkout';
+import { connectFormik, type ConnectFormikProps } from '../../common/form';
+import { Fieldset, Legend } from '../../ui/form';
 
 import InstrumentStorageField from './InstrumentStorageField';
 import InstrumentStoreAsDefaultField from './InstrumentStoreAsDefaultField';
@@ -23,7 +26,13 @@ type WithFormValues = ConnectFormikProps<{ shouldSaveInstrument: boolean }>;
 const StoreInstrumentFieldset: FunctionComponent<
     StoreInstrumentFieldsetProps & WithStorageSettings
 > = ({ showSave, showSetAsDefault, isAccountInstrument = false, setAsDefaultEnabled }) => (
-    <Fieldset>
+    <Fieldset
+        legend={
+            <Legend hidden>
+                <TranslatedString id="payment.instrument_storage_options_text" />
+            </Legend>
+        }
+    >
         {showSave && <InstrumentStorageField isAccountInstrument={isAccountInstrument} />}
 
         {showSetAsDefault && (

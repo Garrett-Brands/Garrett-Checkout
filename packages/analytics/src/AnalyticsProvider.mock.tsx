@@ -1,6 +1,6 @@
-import React, { ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 
-import AnalyticsContext, { AnalyticsEvents } from './AnalyticsContext';
+import AnalyticsContext, { type AnalyticsEvents } from './AnalyticsContext';
 
 interface AnalyticsProviderMockProps {
     children: ReactElement;
@@ -23,6 +23,7 @@ const AnalyticsProviderMock = ({ children, analyticsTracker = {} }: AnalyticsPro
         paymentRejected: jest.fn(),
         paymentComplete: jest.fn(),
         exitCheckout: jest.fn(),
+        walletButtonClick: jest.fn(),
     };
 
     return (

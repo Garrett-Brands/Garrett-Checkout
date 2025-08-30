@@ -1,8 +1,8 @@
-import { CardInstrument } from '@bigcommerce/checkout-sdk';
+import { type CardInstrument } from '@bigcommerce/checkout-sdk';
 import { expirationDate } from 'card-validator';
 import classNames from 'classnames';
 import creditCardType from 'credit-card-type';
-import React, { FunctionComponent, memo, useCallback } from 'react';
+import React, { type FunctionComponent, memo, useCallback } from 'react';
 
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 import { CreditCardIcon, LoadingOverlay } from '@bigcommerce/checkout/ui';
@@ -32,11 +32,10 @@ const ManageInstrumentsRow: FunctionComponent<ManageInstrumentsRowProps> = ({
 }) => {
     const cardType = mapFromInstrumentCardType(instrument.brand);
     const cardInfo = creditCardType.getTypeInfo(cardType);
-    const isExpired =
-        expirationDate({
-            month: instrument.expiryMonth,
-            year: instrument.expiryYear,
-        }).isValid === false;
+    const isExpired = !expirationDate({
+        month: instrument.expiryMonth,
+        year: instrument.expiryYear,
+    }).isValid;
 
     const handleDelete = useCallback(() => {
         onDeleteInstrument(instrument.bigpayToken);
@@ -47,14 +46,9 @@ const ManageInstrumentsRow: FunctionComponent<ManageInstrumentsRowProps> = ({
             <td data-test="manage-instrument-cardType">
                 <CreditCardIcon cardType={cardType} />
 
-                {
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    cardInfo && (
-                        <span className="instrumentModal-instrumentCardType">
-                            {cardInfo.niceType}
-                        </span>
-                    )
-                }
+                {cardInfo && (
+                    <span className="instrumentModal-instrumentCardType">{cardInfo.niceType}</span>
+                )}
             </td>
             <td data-test="manage-instrument-last4">{instrument.last4}</td>
             <td
@@ -98,7 +92,7 @@ const ManageCardInstrumentsTable: FunctionComponent<ManageCardInstrumentsTablePr
 
     return (
         <LoadingOverlay isLoading={isDeletingInstrument}>
-            <table className="table">
+            <table className="table" data-test="manage-card-instruments-table">
                 <thead className="table-thead">
                     <tr>
                         <th>

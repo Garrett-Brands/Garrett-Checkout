@@ -1,26 +1,26 @@
 import {
-    CardInstrument,
-    CheckoutSelectors,
-    HostedFieldType,
-    Instrument,
-    PaymentInitializeOptions,
-    PaymentInstrument,
-    PaymentMethod,
-    PaymentRequestOptions,
+    type CardInstrument,
+    type CheckoutSelectors,
+    type HostedFieldType,
+    type Instrument,
+    type PaymentInitializeOptions,
+    type PaymentInstrument,
+    type PaymentMethod,
+    type PaymentRequestOptions,
 } from '@bigcommerce/checkout-sdk';
 import { memoizeOne } from '@bigcommerce/memoize';
 import { find, noop } from 'lodash';
-import React, { Component, ReactNode } from 'react';
-import { ObjectSchema } from 'yup';
+import React, { Component, type ReactNode } from 'react';
+import { type ObjectSchema } from 'yup';
 
-import { PaymentFormValues } from '@bigcommerce/checkout/payment-integration-api';
+import { type MapToPropsFactory } from '@bigcommerce/checkout/legacy-hoc';
+import { withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps, type PaymentFormValues } from '@bigcommerce/checkout/payment-integration-api';
+import { LoadingOverlay } from '@bigcommerce/checkout/ui';
 
-import { CheckoutContextProps, withCheckout } from '../../checkout';
-import { connectFormik, ConnectFormikProps } from '../../common/form';
-import { MapToPropsFactory } from '../../common/hoc';
-import { withLanguage, WithLanguageProps } from '../../locale';
-import { withForm, WithFormProps } from '../../ui/form';
-import { LoadingOverlay } from '../../ui/loading';
+import { withCheckout } from '../../checkout';
+import { connectFormik, type ConnectFormikProps } from '../../common/form';
+import { withForm, type WithFormProps } from '../../ui/form';
 import {
     configureCardValidator,
     CreditCardFieldset,
@@ -28,7 +28,7 @@ import {
 } from '../creditCard';
 import {
     CardInstrumentFieldset,
-    CardInstrumentFieldsetValues,
+    type CardInstrumentFieldsetValues,
     CreditCardValidation,
     getInstrumentValidationSchema,
     isCardInstrument,
@@ -37,9 +37,9 @@ import {
     isInstrumentFeatureAvailable,
 } from '../storedInstrument';
 import StoreInstrumentFieldset from '../StoreInstrumentFieldset';
-import withPayment, { WithPaymentProps } from '../withPayment';
+import withPayment, { type WithPaymentProps } from '../withPayment';
 
-import CreditCardFieldsetValues from './CreditCardFieldsetValues';
+import type CreditCardFieldsetValues from './CreditCardFieldsetValues';
 
 export interface CreditCardPaymentMethodProps {
     isInitializing?: boolean;
@@ -76,6 +76,7 @@ interface CreditCardPaymentMethodState {
     focusedHostedFieldType?: HostedFieldType;
     isAddingNewCard: boolean;
     selectedInstrumentId?: string;
+    isPreloaderOn: boolean;
 }
 
 class CreditCardPaymentMethod extends Component<
@@ -89,6 +90,7 @@ class CreditCardPaymentMethod extends Component<
 > {
     state: CreditCardPaymentMethodState = {
         isAddingNewCard: false,
+        isPreloaderOn: true,
     };
 
     async componentDidMount(): Promise<void> {
@@ -115,7 +117,7 @@ class CreditCardPaymentMethod extends Component<
                     methodId: method.id,
                 },
                 this.getSelectedInstrument(),
-            );
+            ).then(() => this.setState({ isPreloaderOn: false }));
         } catch (error) {
             onUnhandledError(error);
         }
@@ -174,6 +176,7 @@ class CreditCardPaymentMethod extends Component<
                     },
                     this.getSelectedInstrument(),
                 );
+
             } catch (error) {
                 onUnhandledError(error);
             }
@@ -194,11 +197,11 @@ class CreditCardPaymentMethod extends Component<
             method,
         } = this.props;
 
-        const { isAddingNewCard } = this.state;
+        const { isAddingNewCard, isPreloaderOn } = this.state;
 
         const selectedInstrument = this.getSelectedInstrument();
         const shouldShowCreditCardFieldset = !shouldShowInstrumentFieldset || isAddingNewCard;
-        const isLoading = isInitializing || isLoadingInstruments;
+        const isLoading = isInitializing || isLoadingInstruments || isPreloaderOn;
         const shouldShowNumberField = selectedInstrument
             ? isInstrumentCardNumberRequiredProp(selectedInstrument)
             : false;
@@ -208,7 +211,7 @@ class CreditCardPaymentMethod extends Component<
 
         return (
             <LoadingOverlay hideContentWhenLoading isLoading={isLoading}>
-                <div className="paymentMethod paymentMethod--creditCard">
+                <div className="paymentMethod paymentMethod--creditCard" data-test='credit-cart-payment-method'>
                     {shouldShowInstrumentFieldset && (
                         <CardInstrumentFieldset
                             instruments={instruments}
@@ -317,6 +320,12 @@ class CreditCardPaymentMethod extends Component<
     }
 
     private handleUseNewCard: () => void = () => {
+        const {
+            formik: { setFieldValue },
+        } = this.props;
+
+        setFieldValue('hostedForm.cardType', '');
+
         this.setState({
             isAddingNewCard: true,
             selectedInstrumentId: undefined,
@@ -324,6 +333,12 @@ class CreditCardPaymentMethod extends Component<
     };
 
     private handleSelectInstrument: (id: string) => void = (id) => {
+        const {
+            formik: { setFieldValue },
+        } = this.props;
+
+        setFieldValue('hostedForm.cardType', '');
+
         this.setState({
             isAddingNewCard: false,
             selectedInstrumentId: id,
@@ -364,7 +379,7 @@ const mapFromCheckoutProps: MapToPropsFactory<
     );
 
     return (context, props) => {
-        const { isUsingMultiShipping = false, method } = props;
+        const { method } = props;
 
         const { checkoutService, checkoutState } = context;
 
@@ -384,7 +399,6 @@ const mapFromCheckoutProps: MapToPropsFactory<
         const isInstrumentFeatureAvailableProp = isInstrumentFeatureAvailable({
             config,
             customer,
-            isUsingMultiShipping,
             paymentMethod: method,
         });
 

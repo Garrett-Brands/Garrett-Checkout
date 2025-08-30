@@ -1,9 +1,10 @@
-import { Order } from '@bigcommerce/checkout-sdk';
+import { type Order } from '@bigcommerce/checkout-sdk';
 
 import { mapFromPayments } from '../giftCertificate';
 
+import getOrderShippingCostAfterAutomaticDiscount from './getOrderShippingCostAfterAutomaticDiscount';
 import getStoreCreditAmount from './getStoreCreditAmount';
-import { OrderSummarySubtotalsProps } from './OrderSummarySubtotals';
+import { type OrderSummarySubtotalsProps } from './OrderSummarySubtotals';
 
 export default function mapToOrderSummarySubtotalsProps({
     baseAmount,
@@ -15,10 +16,20 @@ export default function mapToOrderSummarySubtotalsProps({
     giftWrappingCostTotal,
     coupons,
     taxes,
-}: Order): OrderSummarySubtotalsProps {
+    fees,
+    consignments,
+}: Order,
+isShippingDiscountDisplayEnabled: boolean,
+): OrderSummarySubtotalsProps {
+
+    const shippingAmount = isShippingDiscountDisplayEnabled && consignments.shipping.length > 0
+    ? getOrderShippingCostAfterAutomaticDiscount(shippingCostBeforeDiscount, consignments.shipping)
+    : shippingCostBeforeDiscount;
+
     return {
         subtotalAmount: baseAmount,
-        shippingAmount: shippingCostBeforeDiscount,
+        shippingAmount,
+        shippingAmountBeforeDiscount: isShippingDiscountDisplayEnabled ? shippingCostBeforeDiscount : undefined,
         giftWrappingAmount: giftWrappingCostTotal,
         discountAmount,
         storeCreditAmount: getStoreCreditAmount(payments),
@@ -27,5 +38,6 @@ export default function mapToOrderSummarySubtotalsProps({
         giftCertificates: payments && mapFromPayments(payments),
         taxes,
         isTaxIncluded,
+        fees,
     };
 }

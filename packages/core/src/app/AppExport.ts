@@ -1,7 +1,8 @@
-import { RenderCheckout } from './checkout';
+import { type InitializeLanguageService } from '@bigcommerce/checkout/locale';
+
+import { type RenderCheckout } from './checkout';
 import { isRecord } from './common/utility';
-import { InitializeLanguageService } from './locale';
-import { RenderOrderConfirmation } from './order';
+import { type RenderOrderConfirmation } from './order';
 
 export default interface AppExport {
     renderCheckout: RenderCheckout;

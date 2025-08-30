@@ -1,14 +1,15 @@
-import { CardInstrument } from '@bigcommerce/checkout-sdk';
+import { type CardInstrument } from '@bigcommerce/checkout-sdk';
 import { expirationDate } from 'card-validator';
 import classNames from 'classnames';
 import creditCardType from 'credit-card-type';
-import { FieldProps } from 'formik';
+import { type FieldProps } from 'formik';
 import { find, noop } from 'lodash';
-import React, { FunctionComponent, PureComponent, ReactNode, useCallback } from 'react';
+import React, { type FunctionComponent, PureComponent, type ReactNode, useCallback } from 'react';
 
-import { TranslatedString } from '../../locale';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { CreditCardIcon } from '@bigcommerce/checkout/ui';
+
 import { DropdownTrigger } from '../../ui/dropdown';
-import { CreditCardIcon } from '../creditCard';
 
 import mapFromInstrumentCardType from './mapFromInstrumentCardType';
 

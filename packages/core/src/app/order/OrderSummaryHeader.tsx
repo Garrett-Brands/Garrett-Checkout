@@ -1,14 +1,21 @@
-import React, { FunctionComponent } from 'react';
+import classNames from 'classnames';
+import React, { type FunctionComponent } from 'react';
 
-import { TranslatedString } from '../locale';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { useThemeContext } from '@bigcommerce/checkout/ui';
 
-const OrderSummaryHeader: FunctionComponent = ({ children }) => (
-    <header className="cart-header">
-        <h3 className="cart-title optimizedCheckout-headingSecondary">
-            <TranslatedString id="cart.cart_heading" />
-        </h3>
-        {children}
-    </header>
-);
+const OrderSummaryHeader: FunctionComponent<{ children?: React.ReactNode }> = ({ children }) => {
+    const { themeV2 } = useThemeContext();
+
+    return (
+        <header className="cart-header">
+            <h3 className={classNames('cart-title', 'optimizedCheckout-headingSecondary',
+                { 'sub-header': themeV2 })}>
+                <TranslatedString id="cart.cart_heading" />
+            </h3>
+            {children}
+        </header>
+    );
+}
 
 export default OrderSummaryHeader;

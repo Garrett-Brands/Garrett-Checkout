@@ -1,4 +1,5 @@
 # Checkout JS
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/bigcommerce/checkout-js)
 
 Checkout JS is a browser-based application providing a seamless UI for BigCommerce shoppers to complete their checkout. It is also known as [Optimized One-Page Checkout](https://support.bigcommerce.com/s/article/Optimized-Single-Page-Checkout), which is currently the recommended checkout option for all BigCommerce stores.
 
@@ -6,9 +7,9 @@ Checkout JS is a browser-based application providing a seamless UI for BigCommer
 
 In order to build from the source code, you must have the following set up in your development environment.
 
-* Node >= v16.
-* NPM >= v8.
-* Unix-based operating system.
+* Node >= v22.
+* NPM >= v10.
+* Unix-based operating system. (WSL on Windows)
 
 One of the simplest ways to install Node is using [NVM](https://github.com/nvm-sh/nvm#installation-and-update). You can follow their instructions to set up your environment if it is not already set up.
 
@@ -42,6 +43,20 @@ npm run release:alpha
 
 After that, you need to push the prerelease tag to your fork so it can be referenced remotely.
 
+### Testing
+
+To run E2E tests, use the following command:
+
+```sh
+npm run e2e
+```
+
+The E2E tests in this project use HAR files to stub network calls. If you need to manually update the HAR files to make minor changes to the requests, you must run the command below to regenerate the ID for each updated request. Otherwise, the stubs will not function properly.
+
+```sh
+npm run regenerate-har
+```
+
 ## Custom Checkout installation
 
 Follow [this guide](https://developer.bigcommerce.com/stencil-docs/customizing-checkout/installing-custom-checkouts) for instructions on how to fork and install this app as a Custom Checkout in your store.
@@ -59,8 +74,6 @@ Everytime a PR is merged to the master branch, CircleCI will trigger a build aut
 
 
 ## Contribution
-
-We currently do not accept Pull Requests from external parties. However, if you are an external party and want to report a bug or provide your feedback, you are more than welcome to raise a GitHub Issue. We will attend to these issues as quickly as we can.
 
 More information can be found in the [contribution guide](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md) for this project.
 

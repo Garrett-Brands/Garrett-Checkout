@@ -1,4 +1,4 @@
-import AutoExportConfig from './auto-export-config';
+import type AutoExportConfig from './auto-export-config';
 
 export default function isAutoExportConfig(config: unknown): config is AutoExportConfig {
     if (!(config instanceof Object)) {
@@ -27,6 +27,14 @@ export default function isAutoExportConfig(config: unknown): config is AutoExpor
         }
 
         if (!hasKey(entry, 'memberPattern') || typeof entry.memberPattern !== 'string') {
+            return false;
+        }
+
+        if (hasKey(entry, 'ignorePackages') && !isArray(entry.ignorePackages)) {
+            return false;
+        }
+
+        if (hasKey(entry, 'useLazyLoad') && typeof entry.useLazyLoad !== 'boolean') {
             return false;
         }
 

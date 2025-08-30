@@ -1,1 +1,1 @@
-import 'core-js';
+import './generated/polyfill';

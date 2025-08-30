@@ -1,5 +1,6 @@
-import { CustomerInitializeOptions, CustomerRequestOptions } from '@bigcommerce/checkout-sdk';
-import React, { PureComponent } from 'react';
+import { type CustomerInitializeOptions, type CustomerRequestOptions } from '@bigcommerce/checkout-sdk';
+import { noop } from 'lodash';
+import React, { type ReactElement, useEffect } from 'react';
 
 const WALLET_BUTTON_HEIGHT = 36;
 
@@ -10,12 +11,19 @@ export interface CheckoutButtonProps {
     deinitialize(options: CustomerRequestOptions): void;
     initialize(options: CustomerInitializeOptions): void;
     onError?(error: Error): void;
+    onClick?(methodId: string): void;
 }
 
-export default class CheckoutButton extends PureComponent<CheckoutButtonProps> {
-    componentDidMount() {
-        const { containerId, initialize, isShowingWalletButtonsOnTop, methodId, onError } = this.props;
-
+const CheckoutButton = ({
+    containerId,
+    methodId,
+    isShowingWalletButtonsOnTop,
+    deinitialize,
+    initialize,
+    onError,
+    onClick = noop,
+}: CheckoutButtonProps): ReactElement => {
+    useEffect(() => {
         const heightOption = isShowingWalletButtonsOnTop && (methodId === 'braintreepaypal' || methodId === 'braintreepaypalcredit' )
             ? { buttonHeight: WALLET_BUTTON_HEIGHT }
             : {};
@@ -26,19 +34,16 @@ export default class CheckoutButton extends PureComponent<CheckoutButtonProps> {
                 ...heightOption,
                 container: containerId,
                 onError,
+                onClick: () => onClick(methodId),
             },
         });
-    }
 
-    componentWillUnmount() {
-        const { deinitialize, methodId } = this.props;
+        return () => {
+            deinitialize({ methodId });
+        };
+    }, []);
 
-        deinitialize({ methodId });
-    }
+    return <div data-test={containerId} id={containerId} />;
+};
 
-    render() {
-        const { containerId } = this.props;
-
-        return <div id={containerId} />;
-    }
-}
+export default CheckoutButton;

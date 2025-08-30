@@ -1,6 +1,6 @@
-import { FieldProps } from 'formik';
+import { type FieldProps } from 'formik';
 import { kebabCase } from 'lodash';
-import React, { FunctionComponent, memo, ReactNode, useCallback } from 'react';
+import React, { type FunctionComponent, memo, type ReactNode, useCallback } from 'react';
 
 import BasicFormField from './BasicFormField';
 import FormFieldError from './FormFieldError';
@@ -16,6 +16,7 @@ export interface FormFieldProps {
     isFloatingLabelEnabled?: boolean;
     input(field: FieldProps<string>): ReactNode;
     onChange?(value: string): void;
+    themeV2?: boolean;
 }
 
 const FormField: FunctionComponent<FormFieldProps> = ({
@@ -28,15 +29,17 @@ const FormField: FunctionComponent<FormFieldProps> = ({
     name,
     id,
     isFloatingLabelEnabled,
+    themeV2 = false,
 }) => {
     const renderField = useCallback(
-        (props) => (
+        (props: FieldProps<string>) => (
             <>
                 {isFloatingLabelEnabled && input(props)}
 
                 {label && (typeof label === 'function' ? label(name) : label)}
                 {labelContent && !label && (
                     <Label
+                        additionalClassName={themeV2 ? 'floating-form-field-label' : ''}
                         htmlFor={name}
                         id={`${id ?? name}-label`}
                         isFloatingLabelEnabled={isFloatingLabelEnabled}

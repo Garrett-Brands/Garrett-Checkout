@@ -1,18 +1,20 @@
 import { noop } from 'lodash';
 import React, {
     createContext,
-    FunctionComponent,
+    type FunctionComponent,
     memo,
-    ReactNode,
+    type ReactNode,
     useCallback,
+    useEffect,
     useMemo,
 } from 'react';
 
-import { connectFormik, ConnectFormikProps } from '../../common/form';
-import { Accordion } from '../accordion';
+import { Accordion } from '@bigcommerce/checkout/ui';
+
+import { connectFormik, type ConnectFormikProps } from '../../common/form';
 
 export interface ChecklistProps {
-    children: ReactNode;
+    children?: ReactNode;
     defaultSelectedItemId?: string;
     isDisabled?: boolean;
     name: string;
@@ -28,6 +30,12 @@ export const ChecklistContext = createContext<ChecklistContextProps | undefined>
 const Checklist: FunctionComponent<
     ChecklistProps & ConnectFormikProps<{ [key: string]: string }>
 > = ({ formik: { setFieldValue }, name, onSelect = noop, ...props }) => {
+    useEffect(() => {
+        return () => {
+            setFieldValue(name, '');
+        };
+    }, []);
+
     const handleSelect = useCallback(
         (value: string) => {
             setFieldValue(name, value);

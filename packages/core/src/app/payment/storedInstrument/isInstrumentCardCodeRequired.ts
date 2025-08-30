@@ -1,6 +1,8 @@
-import { LineItemMap, PaymentInstrument, PaymentMethod } from '@bigcommerce/checkout-sdk';
+import { type LineItemMap, type PaymentInstrument, type PaymentMethod } from '@bigcommerce/checkout-sdk';
 
 import { UntrustedShippingCardVerificationType } from './CardInstrumentFieldset';
+
+export const PROVIDERS_WITHOUT_CARD_CODE = ['bluesnapdirect'];
 
 export interface IsInstrumentCardCodeRequiredState {
     instrument: PaymentInstrument;
@@ -13,6 +15,10 @@ export default function isInstrumentCardCodeRequired({
     lineItems,
     paymentMethod,
 }: IsInstrumentCardCodeRequiredState): boolean {
+    if (PROVIDERS_WITHOUT_CARD_CODE.includes(instrument.provider)) {
+        return false;
+    }
+
     // If there's a digital item in the cart, always show CVV field
     if (lineItems.digitalItems.length > 0 || lineItems.giftCertificates.length > 0) {
         return true;

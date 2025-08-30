@@ -1,9 +1,13 @@
-/* istanbul ignore file */
-
-import { FormFieldItem } from '@bigcommerce/checkout-sdk';
-import { FieldArray, FieldArrayRenderProps, getIn } from 'formik';
+import { type FormFieldItem } from '@bigcommerce/checkout-sdk';
+import { FieldArray, type FieldArrayRenderProps, getIn } from 'formik';
 import { difference, kebabCase, noop, pick } from 'lodash';
-import React, { ChangeEvent, FunctionComponent, memo, ReactNode, useCallback } from 'react';
+import React, {
+    type ChangeEvent,
+    type FunctionComponent,
+    memo,
+    type ReactNode,
+    useCallback,
+} from 'react';
 
 import { FormFieldContainer } from '../FormFieldContainer';
 import { FormFieldError } from '../FormFieldError';
@@ -17,6 +21,7 @@ export interface CheckboxGroupFormFieldProps {
     label: ReactNode;
     name: string;
     options: FormFieldItem[];
+    themeV2?: boolean;
     onChange?(values: string[]): void;
 }
 
@@ -32,6 +37,7 @@ const MultiCheckboxFormField: FunctionComponent<MultiCheckboxFormFieldProps> = (
     options,
     push,
     remove,
+    themeV2,
 }) => {
     const handleSelectAll = useCallback(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -72,7 +78,7 @@ const MultiCheckboxFormField: FunctionComponent<MultiCheckboxFormFieldProps> = (
     );
 
     return (
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         <FormFieldContainer hasError={getIn(errors, name) && getIn(errors, name).length}>
             {label}
 
@@ -81,6 +87,7 @@ const MultiCheckboxFormField: FunctionComponent<MultiCheckboxFormFieldProps> = (
                     onSelectedAll={handleSelectAll}
                     onSelectedNone={handleSelectNone}
                     testId={id}
+                    themeV2={themeV2}
                 />
             )}
 
@@ -90,6 +97,7 @@ const MultiCheckboxFormField: FunctionComponent<MultiCheckboxFormFieldProps> = (
                 name={name}
                 onChange={handleInputChange}
                 options={options}
+                themeV2={themeV2}
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 value={getIn(values, name) || []}
             />
@@ -110,6 +118,7 @@ const CheckboxGroupFormField: FunctionComponent<CheckboxGroupFormFieldProps> = (
     name,
     onChange,
     options,
+    themeV2,
 }) => {
     const renderField = useCallback(
         (renderProps: FieldArrayRenderProps) => (
@@ -119,10 +128,11 @@ const CheckboxGroupFormField: FunctionComponent<CheckboxGroupFormFieldProps> = (
                 name={name}
                 onChange={onChange}
                 options={options}
+                themeV2={themeV2}
                 {...pick(renderProps, ['form', 'pop', 'push', 'remove'])}
             />
         ),
-        [id, label, name, onChange, options],
+        [id, label, name, onChange, options, themeV2],
     );
 
     return <FieldArray name={name} render={renderField} />;

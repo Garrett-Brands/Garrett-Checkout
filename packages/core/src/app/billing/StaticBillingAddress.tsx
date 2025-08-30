@@ -1,10 +1,13 @@
-import { Address, CheckoutPayment, FormField } from '@bigcommerce/checkout-sdk';
-import React, { FunctionComponent, memo } from 'react';
+import { type Address, type CheckoutPayment, type FormField } from '@bigcommerce/checkout-sdk';
+import React, { type FunctionComponent, memo } from 'react';
+
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+import { isPayPalFastlaneAddress, PoweredByPayPalFastlaneLabel, usePayPalFastlaneAddress } from '@bigcommerce/checkout/paypal-fastlane-integration';
 
 import { AddressType, StaticAddress } from '../address';
-import { CheckoutContextProps, withCheckout } from '../checkout';
+import { withCheckout } from '../checkout';
 import { EMPTY_ARRAY } from '../common/utility';
-import { TranslatedString } from '../locale';
 
 export interface StaticBillingAddressProps {
     address: Address;
@@ -18,6 +21,9 @@ interface WithCheckoutStaticBillingAddressProps {
 const StaticBillingAddress: FunctionComponent<
     StaticBillingAddressProps & WithCheckoutStaticBillingAddressProps
 > = ({ address, payments = EMPTY_ARRAY }) => {
+    const { paypalFastlaneAddresses } = usePayPalFastlaneAddress();
+    const showPayPalFastlaneLabel = isPayPalFastlaneAddress(address, paypalFastlaneAddresses);
+
     if (payments.find((payment) => payment.providerId === 'amazonpay')) {
         return (
             <p>
@@ -26,7 +32,13 @@ const StaticBillingAddress: FunctionComponent<
         );
     }
 
-    return <StaticAddress address={address} type={AddressType.Billing} />;
+    return (
+        <>
+            <StaticAddress address={address} type={AddressType.Billing} />
+
+            {showPayPalFastlaneLabel && <PoweredByPayPalFastlaneLabel />}
+        </>
+    );
 };
 
 export function mapToStaticBillingAddressProps(

@@ -1,9 +1,11 @@
-import { BankInstrument, PaymentInstrument } from '@bigcommerce/checkout-sdk';
+import { type BankInstrument, type PaymentInstrument } from '@bigcommerce/checkout-sdk';
 
 export function isBankAccountInstrument(
     instrument?: PaymentInstrument,
 ): instrument is BankInstrument {
-    return instrument?.type === 'bank';
+    return (
+        instrument?.type === 'bank' && instrument?.method !== 'ach' && instrument?.method !== 'ecp'
+    );
 }
 
 export default function assertIsBankInstrument(

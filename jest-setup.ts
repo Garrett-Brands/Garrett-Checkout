@@ -1,28 +1,15 @@
-import { configure } from 'enzyme';
-import * as Adapter from 'enzyme-adapter-react-16';
+/* eslint-disable no-console,jest/no-standalone-expect */
+import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/extend-expect';
+import { configure as configureRTL } from '@testing-library/react';
 import { noop } from 'lodash';
 
-const adapter = Adapter as any;
-
-configure({ adapter: new adapter.default() });
+configureRTL({ testIdAttribute: 'data-test' });
 
 // https://github.com/facebook/jest/issues/10784
 process.on('unhandledRejection', (reason) => {
     console.log(reason);
 });
-
-// https://github.com/FezVrasta/popper.js/issues/478
-if (window.document) {
-    document.createRange = () =>
-        ({
-            setStart: noop,
-            setEnd: noop,
-            commonAncestorContainer: {
-                nodeName: 'BODY',
-                ownerDocument: document,
-            },
-        } as Range);
-}
 
 window.matchMedia = jest.fn(
     () =>
@@ -50,6 +37,28 @@ Object.defineProperty(
 
 (global as any).__webpack_public_path__ = undefined;
 
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
 beforeAll(() => {
     expect.hasAssertions();
+
+    console.error = (...args: unknown[]) => {
+        const message = args.map(String).join();
+
+        // FIXME: Remove these ignored errors once we have enabled react 18 features
+        if (/Formik|createRoot|React.act|findDOMNode/.test(message)) {
+            return;
+        }
+
+        originalConsoleError(...args);
+    };
+
+    console.warn = (...args: unknown[]) => {
+        if (args.map(String).join().includes('Formik')) {
+            return;
+        }
+
+        originalConsoleWarn(...args);
+    };
 });

@@ -1,12 +1,13 @@
-import { Field, FieldConfig, FieldProps, getIn } from 'formik';
+import { Field, type FieldConfig, type FieldProps, getIn } from 'formik';
 import { isDate, noop } from 'lodash';
 import React, {
-    Component,
     createElement,
-    FunctionComponent,
+    type FunctionComponent,
     memo,
     useCallback,
+    useEffect,
     useMemo,
+    useRef,
 } from 'react';
 import shallowEqual from 'shallowequal';
 
@@ -16,7 +17,7 @@ export interface BasicFormFieldProps extends FieldConfig {
     additionalClassName?: string;
     className?: string;
     testId?: string;
-    onChange?(value: any): void;
+    onChange?(value: unknown): void;
 }
 
 type InnerFieldInputProps = FieldProps &
@@ -26,41 +27,40 @@ type InnerFieldInputProps = FieldProps &
 
 type InnerFieldProps = Omit<BasicFormFieldProps, keyof FieldConfig> & InnerFieldInputProps;
 
-class InnerFieldInput extends Component<InnerFieldInputProps> {
-    componentDidUpdate({ field: prevField }: InnerFieldInputProps) {
-        const {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            field: { value },
-            onChange = noop,
-        } = this.props;
+const InnerFieldInput: FunctionComponent<InnerFieldInputProps> = ({
+    field,
+    onChange = noop,
+    component = 'input',
+    render,
+    ...props
+}) => {
+    const prevValueRef = useRef<unknown>(field.value);
 
+    useEffect(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const comparableValue = isDate(value) ? value.getTime() : value;
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const comparablePrevValue = isDate(prevField.value)
-            ? prevField.value.getTime()
-            : prevField.value;
+        const comparableValue = isDate(field.value) ? field.value.getTime() : field.value;
+        const comparablePrevValue = isDate(prevValueRef.current)
+            ? prevValueRef.current.getTime()
+            : prevValueRef.current;
 
         if (comparableValue !== comparablePrevValue) {
-            onChange(value);
+            onChange(field.value);
         }
+
+        prevValueRef.current = field.value;
+    }, [field.value, onChange]);
+
+    if (render) {
+        return render({ field, ...props });
     }
 
-    render() {
-        const { component = 'input', field, render } = this.props;
-
-        if (render) {
-            return render(this.props);
-        }
-
-        if (typeof component === 'string') {
-            return createElement(component, field);
-        }
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/consistent-type-assertions, @typescript-eslint/no-unsafe-argument
-        return createElement(component as any, this.props);
+    if (typeof component === 'string') {
+        return createElement(component, field);
     }
-}
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return createElement(component as any, { field, ...props });
+};
 
 const InnerField: FunctionComponent<InnerFieldProps> = memo(
     ({ additionalClassName, component, field, form, onChange, render, testId }) => {
@@ -70,6 +70,7 @@ const InnerField: FunctionComponent<InnerFieldProps> = memo(
                     component={component}
                     field={field}
                     form={form}
+                    meta={form.getFieldMeta(field.name)}
                     onChange={onChange}
                     render={render}
                 />
@@ -121,7 +122,7 @@ const BasicFormField: FunctionComponent<BasicFormFieldProps> = ({
         [additionalClassName, className, component, render, testId, onChange],
     );
 
-    return <Field {...rest} render={renderInnerField} />;
+    return <Field {...rest}>{renderInnerField}</Field>;
 };
 
 export default memo(BasicFormField);

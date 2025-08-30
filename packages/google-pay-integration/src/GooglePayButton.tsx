@@ -1,13 +1,15 @@
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
 import { CheckoutButton } from '@bigcommerce/checkout/checkout-button-integration';
 import {
-    CheckoutButtonProps,
-    CheckoutButtonResolveId,
+    type CheckoutButtonProps,
+    type CheckoutButtonResolveId,
     EmbeddedCheckoutUnsupportedError,
     isEmbedded,
     toResolvableComponent,
 } from '@bigcommerce/checkout/payment-integration-api';
+
+import './GooglePayButton.scss';
 
 const GooglePayButton: FunctionComponent<CheckoutButtonProps> = (props) => {
     const { language, onUnhandledError } = props;
@@ -24,10 +26,25 @@ const GooglePayButton: FunctionComponent<CheckoutButtonProps> = (props) => {
         return null;
     }
 
-    return <CheckoutButton {...props} />;
+    return <CheckoutButton checkoutButtonContainerClass="google-pay-top-button" {...props} />;
 };
 
 export default toResolvableComponent<CheckoutButtonProps, CheckoutButtonResolveId>(
     GooglePayButton,
-    [{ id: 'googlepay' }],
+    [
+        { id: 'googlepayadyenv2' },
+        { id: 'googlepayadyenv3' },
+        { id: 'googlepayauthorizenet' },
+        { id: 'googlepaybnz' },
+        { id: 'googlepaybraintree' },
+        { id: 'googlepaypaypalcommerce' },
+        { id: 'googlepaycheckoutcom' },
+        { id: 'googlepaycybersourcev2' },
+        { id: 'googlepayorbital' },
+        { id: 'googlepaystripe' },
+        { id: 'googlepaystripeupe' },
+        { id: 'googlepayworldpayaccess' },
+        { id: 'googlepaytdonlinemart' },
+        { id: 'googlepaystripeocs' },
+    ],
 );

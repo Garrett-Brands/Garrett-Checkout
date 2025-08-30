@@ -1,6 +1,8 @@
-import React, { FunctionComponent, memo, useMemo } from 'react';
+import React, { type FunctionComponent, memo, useMemo } from 'react';
 
-import { TranslatedString } from '../locale';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { useThemeContext } from '@bigcommerce/checkout/ui';
+
 import { CheckboxFormField } from '../ui/form';
 
 export interface BillingSameAsShippingFieldProps {
@@ -10,6 +12,8 @@ export interface BillingSameAsShippingFieldProps {
 const BillingSameAsShippingField: FunctionComponent<BillingSameAsShippingFieldProps> = ({
     onChange,
 }) => {
+    const { themeV2 } = useThemeContext();
+
     const labelContent = useMemo(
         () => <TranslatedString id="billing.use_shipping_address_label" />,
         [],
@@ -21,6 +25,8 @@ const BillingSameAsShippingField: FunctionComponent<BillingSameAsShippingFieldPr
             labelContent={labelContent}
             name="billingSameAsShipping"
             onChange={onChange}
+            testId="billingSameAsShipping"
+            themeV2={themeV2}
         />
     );
 };

@@ -1,13 +1,15 @@
-import { Address, Country, FormField } from '@bigcommerce/checkout-sdk';
+import { type Address, type Country, type FormField } from '@bigcommerce/checkout-sdk';
 import { memoize } from '@bigcommerce/memoize';
 import { forIn, noop } from 'lodash';
-import React, { Component, createRef, ReactNode, RefObject } from 'react';
+import React, { Component, createRef, type ReactNode, type RefObject } from 'react';
 
-import { TranslatedString, withLanguage, WithLanguageProps } from '../locale';
-import { AutocompleteItem } from '../ui/autocomplete';
-import { CheckboxFormField, DynamicFormField, DynamicFormFieldType, Fieldset } from '../ui/form';
+import { TranslatedString, withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+import { DynamicFormField, DynamicFormFieldType, ThemeContext } from '@bigcommerce/checkout/ui';
 
-import { AddressKeyMap } from './address';
+import { type AutocompleteItem } from '../ui/autocomplete';
+import { CheckboxFormField, Fieldset } from '../ui/form';
+
+import { type AddressKeyMap } from './address';
 import {
     getAddressFormFieldInputId,
     getAddressFormFieldLegacyName,
@@ -69,6 +71,8 @@ const AUTOCOMPLETE_FIELD_NAME = 'address1';
 class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
     private containerRef: RefObject<HTMLElement> = createRef();
     private nextElement?: HTMLElement | null;
+    static contextType = ThemeContext;
+    declare context: React.ContextType<typeof ThemeContext>;
 
     private handleDynamicFormFieldChange: (name: string) => (value: string | string[]) => void =
         memoize((name) => (value) => {
@@ -94,6 +98,12 @@ class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
             shouldShowSaveAddress,
             isFloatingLabelEnabled,
         } = this.props;
+
+        if (!this.context) {
+            throw Error('Need to wrap in style context');
+        }
+
+        const { themeV2 } = this.context;
 
         return (
             <>
@@ -158,6 +168,7 @@ class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
                                         field,
                                         translatedPlaceholderId,
                                     )}
+                                    themeV2={themeV2}
                                 />
                             );
                         })}
@@ -167,6 +178,7 @@ class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
                     <CheckboxFormField
                         labelContent={<TranslatedString id="address.save_in_addressbook" />}
                         name={fieldName ? `${fieldName}.shouldSaveAddress` : 'shouldSaveAddress'}
+                        themeV2={themeV2}
                     />
                 )}
             </>
@@ -201,12 +213,18 @@ class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
         const address = mapToAddress(place, countries);
 
         forIn(address, (value, fieldName) => {
+            if (fieldName === AUTOCOMPLETE_FIELD_NAME && value === undefined) {
+                return;
+            }
+
             setFieldValue(fieldName, value as string);
             onChange(fieldName, value as string);
         });
 
-        if (autocompleteValue) {
-            this.syncNonFormikValue(AUTOCOMPLETE_FIELD_NAME, autocompleteValue);
+        const address1 = address.address1 ? address.address1 : autocompleteValue;
+
+        if (address1) {
+            this.syncNonFormikValue(AUTOCOMPLETE_FIELD_NAME, address1);
         }
     };
 
@@ -219,10 +237,10 @@ class AddressForm extends Component<AddressFormProps & WithLanguageProps> {
         const { formFields, setFieldValue = noop, onChange = noop } = this.props;
 
         const dateFormFieldNames = formFields
-            .filter((field) => field.custom && field.fieldType === DynamicFormFieldType.date)
+            .filter((field) => field.custom && field.fieldType === DynamicFormFieldType.DATE)
             .map((field) => field.name);
 
-        if (fieldName === AUTOCOMPLETE_FIELD_NAME || dateFormFieldNames.indexOf(fieldName) > -1) {
+        if (fieldName === AUTOCOMPLETE_FIELD_NAME || dateFormFieldNames.includes(fieldName)) {
             setFieldValue(fieldName, value);
         }
 

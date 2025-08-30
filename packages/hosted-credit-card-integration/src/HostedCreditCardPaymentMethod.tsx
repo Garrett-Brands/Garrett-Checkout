@@ -1,10 +1,10 @@
-import { CardInstrument, HostedFormOptions } from '@bigcommerce/checkout-sdk';
+import { type CardInstrument, type LegacyHostedFormOptions } from '@bigcommerce/checkout-sdk';
 import { compact, forIn } from 'lodash';
-import React, { FunctionComponent, ReactNode, useCallback, useState } from 'react';
+import React, { type FunctionComponent, type ReactNode, useCallback, useState } from 'react';
 
 import {
     CreditCardPaymentMethodComponent,
-    CreditCardPaymentMethodProps,
+    type CreditCardPaymentMethodProps,
 } from '@bigcommerce/checkout/credit-card-integration';
 import {
     CreditCardCustomerCodeField,
@@ -14,8 +14,8 @@ import {
     isInstrumentCardNumberRequiredSelector,
 } from '@bigcommerce/checkout/instrument-utils';
 import {
-    PaymentMethodProps,
-    PaymentMethodResolveId,
+    type PaymentMethodProps,
+    type PaymentMethodResolveId,
     toResolvableComponent,
 } from '@bigcommerce/checkout/payment-integration-api';
 
@@ -40,7 +40,11 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
     const isInstrumentCardCodeRequiredProp = isInstrumentCardCodeRequiredSelector(checkoutState);
     const isInstrumentCardNumberRequiredProp =
         isInstrumentCardNumberRequiredSelector(checkoutState);
-    const isCardCodeRequired = method.config.cardCode || method.config.cardCode === null;
+    const {
+        config: { cardCode, showCardHolderName },
+    } = method;
+    const isCardCodeRequired = cardCode || cardCode === null;
+    const isCardHolderNameRequired = showCardHolderName ?? true;
 
     const getHostedFieldId: (name: string) => string = useCallback(
         (name) => {
@@ -51,20 +55,26 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
 
     const getHostedFormOptions: (
         selectedInstrument?: CardInstrument,
-    ) => Promise<HostedFormOptions> = useCallback(
+    ) => Promise<LegacyHostedFormOptions> = useCallback(
         async (selectedInstrument) => {
             const styleProps = ['color', 'fontFamily', 'fontSize', 'fontWeight'];
             const isInstrumentCardNumberRequired = selectedInstrument
-                ? isInstrumentCardNumberRequiredProp(selectedInstrument)
+                ? isInstrumentCardNumberRequiredProp(selectedInstrument, method)
                 : false;
             const isInstrumentCardCodeRequired = selectedInstrument
                 ? isInstrumentCardCodeRequiredProp(selectedInstrument, method)
                 : false;
-            const styleContainerId = selectedInstrument
-                ? isInstrumentCardCodeRequired
-                    ? getHostedFieldId('ccCvv')
-                    : undefined
-                : getHostedFieldId('ccNumber');
+            let styleContainerId = '';
+
+            if (selectedInstrument) {
+                if (isInstrumentCardCodeRequired) {
+                    styleContainerId = getHostedFieldId('ccCvv');
+                } else if (isInstrumentCardNumberRequired) {
+                    styleContainerId = getHostedFieldId('ccNumber');
+                }
+            } else {
+                styleContainerId = getHostedFieldId('ccNumber');
+            }
 
             return {
                 fields: selectedInstrument
@@ -108,12 +118,14 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
                                   'payment.credit_card_expiration_placeholder_text',
                               ),
                           },
-                          cardName: {
-                              accessibilityLabel: language.translate(
-                                  'payment.credit_card_name_label',
-                              ),
-                              containerId: getHostedFieldId('ccName'),
-                          },
+                          cardName: isCardHolderNameRequired
+                              ? {
+                                    accessibilityLabel: language.translate(
+                                        'payment.credit_card_name_label',
+                                    ),
+                                    containerId: getHostedFieldId('ccName'),
+                                }
+                              : undefined,
                           cardNumber: {
                               accessibilityLabel: language.translate(
                                   'payment.credit_card_number_label',
@@ -168,6 +180,7 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
             focusedFieldType,
             getHostedFieldId,
             isCardCodeRequired,
+            isCardHolderNameRequired,
             isInstrumentCardCodeRequiredProp,
             isInstrumentCardNumberRequiredProp,
             language,
@@ -189,7 +202,7 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
             }
             cardCodeId={isCardCodeRequired ? getHostedFieldId('ccCvv') : undefined}
             cardExpiryId={getHostedFieldId('ccExpiry')}
-            cardNameId={getHostedFieldId('ccName')}
+            cardNameId={isCardHolderNameRequired ? getHostedFieldId('ccName') : undefined}
             cardNumberId={getHostedFieldId('ccNumber')}
             focusedFieldType={focusedFieldType}
         />
@@ -200,7 +213,7 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
         useCallback(
             (selectedInstrument) => {
                 const isInstrumentCardNumberRequired = selectedInstrument
-                    ? isInstrumentCardNumberRequiredProp(selectedInstrument)
+                    ? isInstrumentCardNumberRequiredProp(selectedInstrument, method)
                     : false;
                 const isInstrumentCardCodeRequired = selectedInstrument
                     ? isInstrumentCardCodeRequiredProp(selectedInstrument, method)
@@ -238,6 +251,7 @@ const HostedCreditCardPaymentMethod: FunctionComponent<PaymentMethodProps> = ({
                     ...options,
                     creditCard: {
                         form: await getHostedFormOptions(selectedInstrument),
+                        bigpayToken: selectedInstrument?.bigpayToken,
                     },
                 });
             },
@@ -274,7 +288,8 @@ export default toResolvableComponent<PaymentMethodProps, PaymentMethodResolveId>
     [
         {
             id: 'hosted-credit-card',
-            // type: 'PAYMENT_TYPE_API',
         },
+        { id: 'credit_card', gateway: 'bluesnapdirect' },
+        { id: 'tdonlinemart' },
     ],
 );

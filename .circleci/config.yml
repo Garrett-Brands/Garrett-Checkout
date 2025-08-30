@@ -2,7 +2,7 @@ aliases:
   - &node_executor
       executor:
         name: node/node
-        node-version: "16.17"
+        node-version: "22.13.0"
 
   - &release_filter
       branches:
@@ -14,42 +14,82 @@ aliases:
         ignore:
           - master
 
+  - &canonical_pull_request_filter
+      branches:
+        ignore:
+          - master
+          - /pull\/[0-9]+/
+
 version: 2.1
 
 orbs:
   ci: bigcommerce/internal@volatile
   node: bigcommerce/internal-node@volatile
+  security: bigcommerce/internal-security@volatile
+  microapp: bigcommerce/internal-microapp@volatile
 
 jobs:
   test-packages:
     <<: *node_executor
+    resource_class: medium+
+    parallelism: 4
     steps:
       - ci/pre-setup
       - node/npm-install
       - run:
           name: "Run unit tests for packages"
-          command: npm run test:others
+          command: |
+            npx nx run-many --target=test --exclude=core,checkout-extension,instrument-utils -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:others -- --ci --files" \
+              --verbose \
+              --split-by=timings
+      - run:
+          command: node scripts/nx/collect-test-results.js
+          when: always
+      - store_test_results:
+          path: test-results
 
-  test-core:
+  test-extension:
     <<: *node_executor
     parallelism: 2
     steps:
       - ci/pre-setup
       - node/npm-install
-      - run: mkdir ~/junit
+      - run:
+          name: "Run unit tests for checkout extension"
+          command: |
+            npx nx run-many --target=test --projects=instrument-utils,checkout-extension -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:extension -- --ci --files" \
+              --verbose \
+              --split-by=timings
+      - run:
+          command: node scripts/nx/collect-test-results.js
+          when: always
+      - store_test_results:
+          path: test-results
+
+  test-core:
+    <<: *node_executor
+    parallelism: 4
+    steps:
+      - ci/pre-setup
+      - node/npm-install
       - run:
           name: "Run unit tests for core package"
           command: |
-            TEST=$(circleci tests glob "packages/core/**/*.spec.ts" "packages/core/**/*.spec.tsx" | circleci tests split --split-by=timings)
             npx nx run core:generate
-            npm run test:core $TEST -- --runInBand
+            npx nx test core -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:core -- --ci --files" \
+              --verbose \
+              --split-by=timings
       - run:
-          command: cp junit.xml ~/junit/
+          command: node scripts/nx/collect-test-results.js
           when: always
       - store_test_results:
-          path: ~/junit
-      - store_artifacts:
-          path: ~/junit
+          path: test-results
 
   lint:
     <<: *node_executor
@@ -63,12 +103,22 @@ jobs:
 
   build:
     <<: *node_executor
+    resource_class: medium+
+    parameters:
+      prerelease:
+        type: boolean
+        default: false
     steps:
       - ci/pre-setup
       - node/npm-install
       - run:
-          name: "Test build"
-          command: npm run build
+          name: "Build artifacts"
+          command: |
+            if [ << parameters.prerelease >> = true ]; then
+              npm run nx:prerelease-build
+            else
+              npm run build
+            fi
       - persist_to_workspace:
           root: .
           paths:
@@ -76,6 +126,8 @@ jobs:
 
   e2e:
     <<: *node_executor
+    parallelism: 2
+    resource_class: medium+
     steps:
       - ci/pre-setup
       - node/npm-install
@@ -87,12 +139,28 @@ jobs:
           command: npx playwright install --with-deps
       - run:
           name: "Run e2e tests"
-          command: npx playwright test
+          command: |
+            TESTFILES=$(circleci tests glob "*/e2e/**/*.spec.ts")
+            echo "$TESTFILES" | \
+            circleci tests run \
+              --command="xargs npx playwright test --config=playwright.config.ts" \
+              --verbose \
+              --split-by=timings
+      - store_test_results:
+          path: packages/test-framework/test-results/junit.xml
       - store_artifacts:
-          path: packages/payment-integration-test-framework/report
+          path: packages/test-framework/report
           destination: artifact-file
       - store_artifacts:
-          path: packages/payment-integration-test-framework/screenshots
+          path: packages/test-framework/screenshots
+
+  sdk-on-cdn:
+    <<: *node_executor
+    steps:
+      - ci/pre-setup
+      - run:
+          name: "Check SDK version on CDN"
+          command: ./scripts/sdk-live-checker.sh
 
   release:
     <<: *node_executor
@@ -155,10 +223,15 @@ workflows:
       - test-packages:
           filters:
             <<: *pull_request_filter
+      - test-extension:
+          filters:
+            <<: *pull_request_filter
       - test-core:
           filters:
             <<: *pull_request_filter
       - build:
+          name: build-prerelease
+          prerelease: true
           filters:
             <<: *pull_request_filter
       - lint:
@@ -167,9 +240,33 @@ workflows:
       - e2e:
           filters:
             <<: *pull_request_filter
-      - ci/validate-commits:
+      - sdk-on-cdn:
           filters:
             <<: *pull_request_filter
+      - security/scan:
+          name: "Gitleaks secrets scan"
+          filters:
+            <<: *canonical_pull_request_filter
+          context: org-global
+          GITLEAKS_BLOCK: "false"
+      - microapp/upload-artifact:
+          filters:
+            <<: *canonical_pull_request_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - test-core
+            - test-packages
+            - test-extension
+            - lint
+            - build-prerelease
+            - e2e
+            - "Gitleaks secrets scan"
+      - ci/notify-success:
+          filters:
+            <<: *canonical_pull_request_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - microapp/upload-artifact
 
   release:
     jobs:
@@ -179,6 +276,9 @@ workflows:
       - test-packages:
           filters:
             <<: *release_filter
+      - test-extension:
+          filters:
+            <<: *release_filter
       - lint:
           filters:
             <<: *release_filter
@@ -188,24 +288,37 @@ workflows:
       - e2e:
           filters:
             <<: *release_filter
-      - approve:
+      - security/scan:
+          name: "Gitleaks secrets scan"
           filters:
             <<: *release_filter
-          type: approval
-          requires:
-            - test-core
-            - test-packages
-            - lint
-            - build
-            - e2e
+          context: org-global
+          GITLEAKS_BLOCK: "false"
       - release:
           filters:
             <<: *release_filter
           requires:
-            - approve
+            - test-core
+            - test-packages
+            - test-extension
+            - lint
+            - build
+            - e2e
+            - "Gitleaks secrets scan"
       - upload_to_sentry:
           filters:
             <<: *release_filter
           requires:
-            - approve
             - release
+      - microapp/upload-artifact:
+          filters:
+            <<: *release_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - release
+      - ci/notify-success:
+          filters:
+            <<: *release_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - microapp/upload-artifact

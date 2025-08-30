@@ -1,56 +1,20 @@
 import { difference } from 'lodash';
-import React, { FunctionComponent, useCallback, useEffect, useState } from 'react';
+import React, { type FunctionComponent, useCallback, useEffect } from 'react';
 
+import { getAppliedStyles } from '@bigcommerce/checkout/dom-utils';
 import {
-    PaymentMethodProps,
-    PaymentMethodResolveId,
+    type PaymentMethodProps,
+    type PaymentMethodResolveId,
     toResolvableComponent,
 } from '@bigcommerce/checkout/payment-integration-api';
-import { getAppliedStyles, LoadingOverlay } from '@bigcommerce/checkout/ui';
+
+import SquareV2Form from './SquareV2Form';
 
 const SquareV2PaymentMethod: FunctionComponent<PaymentMethodProps> = ({
     method,
     checkoutService,
     checkoutState,
-    paymentForm,
 }) => {
-    const [disabled, setDisabled] = useState(true);
-
-    useEffect(() => {
-        const { isPaymentDataRequired } = checkoutState.data;
-
-        paymentForm.disableSubmit(method, isPaymentDataRequired() && disabled);
-    }, [checkoutState, disabled, method, paymentForm]);
-
-    const onValidationChange = useCallback(
-        (isValid: boolean) => setDisabled(!isValid),
-        [setDisabled],
-    );
-
-    const renderPlaceholderFields = () => {
-        return (
-            <div data-test="squarev2_placeholder_form" style={{ display: 'none' }}>
-                <div className="form-field">
-                    <div
-                        className="form-label optimizedCheckout-form-label"
-                        id="messageIsDefault"
-                    />
-                    <div className="form-input optimizedCheckout-form-input" id="inputIsDefault" />
-                </div>
-                <div className="form-field">
-                    <div
-                        className="form-input optimizedCheckout-form-input form-input--focus optimizedCheckout-form-input--focus"
-                        id="inputIsFocus"
-                    />
-                </div>
-                <div className="form-field form-field--error">
-                    <div className="form-inlineMessage" id="messageIsError" />
-                    <div className="form-input optimizedCheckout-form-input" id="inputIsError" />
-                </div>
-            </div>
-        );
-    };
-
     const getStylesFromElement = (id: string, properties: string[]) => {
         const container = document.querySelector<HTMLDivElement>(`#${id}`);
 
@@ -165,7 +129,6 @@ const SquareV2PaymentMethod: FunctionComponent<PaymentMethodProps> = ({
             squarev2: {
                 containerId,
                 style,
-                onValidationChange,
             },
         });
     }, [
@@ -174,7 +137,6 @@ const SquareV2PaymentMethod: FunctionComponent<PaymentMethodProps> = ({
         mapToSquareStyles,
         method.gateway,
         method.id,
-        onValidationChange,
     ]);
 
     const deinitializePayment = useCallback(async () => {
@@ -193,12 +155,14 @@ const SquareV2PaymentMethod: FunctionComponent<PaymentMethodProps> = ({
     }, [deinitializePayment, initializePayment]);
 
     return (
-        <div className="loadingSpinner">
-            <LoadingOverlay isLoading={checkoutState.statuses.isInitializingPayment(method.id)}>
-                {renderPlaceholderFields()}
-                <div id={containerId} style={{ minHeight: '100px' }} />
-            </LoadingOverlay>
-        </div>
+        <SquareV2Form
+            checkoutService={checkoutService}
+            checkoutState={checkoutState}
+            containerId={containerId}
+            deinitializePayment={deinitializePayment}
+            initializePayment={initializePayment}
+            method={method}
+        />
     );
 };
 

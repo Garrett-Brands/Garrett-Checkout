@@ -1,6 +1,8 @@
-import React, { FunctionComponent, memo, useCallback, useMemo } from 'react';
+import { type FieldProps } from 'formik';
+import React, { type FunctionComponent, memo, useCallback, useMemo } from 'react';
 
-import { TranslatedString } from '../../locale';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+
 import { FormField, TextInput } from '../../ui/form';
 
 export interface CreditCardNameFieldProps {
@@ -9,7 +11,7 @@ export interface CreditCardNameFieldProps {
 
 const CreditCardNameField: FunctionComponent<CreditCardNameFieldProps> = ({ name }) => {
     const renderInput = useCallback(
-        ({ field }) => <TextInput {...field} autoComplete="cc-name" id={field.name} />,
+        ({ field }: FieldProps) => <TextInput {...field} autoComplete="cc-name" id={field.name} />,
         [],
     );
 

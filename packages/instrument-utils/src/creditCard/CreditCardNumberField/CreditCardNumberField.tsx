@@ -1,14 +1,14 @@
 import creditCardType from 'credit-card-type';
-import { FieldProps } from 'formik';
+import { type FieldProps } from 'formik';
 import { max } from 'lodash';
 import React, {
-    ChangeEventHandler,
+    type ChangeEventHandler,
     createRef,
-    FunctionComponent,
+    type FunctionComponent,
     memo,
     PureComponent,
-    ReactNode,
-    RefObject,
+    type ReactNode,
+    type RefObject,
     useCallback,
     useMemo,
 } from 'react';
@@ -77,14 +77,14 @@ class CreditCardNumberInput extends PureComponent<FieldProps<string>> {
             this.nextSelectionEnd = selectionEnd || 0;
         }
 
-        form.setFieldValue(name, formattedValue);
+        return form.setFieldValue(name, formattedValue);
     };
 }
 
 const CreditCardNumberField: FunctionComponent<CreditCardNumberFieldProps> = ({ name }) => {
     const renderInput = useCallback(
-        ({ field, form }: FieldProps<string>) => (
-            <CreditCardNumberInput field={field} form={form} />
+        ({ field, form, meta }: FieldProps<string>) => (
+            <CreditCardNumberInput field={field} form={form} meta={meta} />
         ),
         [],
     );

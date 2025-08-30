@@ -1,7 +1,8 @@
-import { FormField as FormFieldType } from '@bigcommerce/checkout-sdk';
-import { FieldProps } from 'formik';
+import { type FormField as FormFieldType } from '@bigcommerce/checkout-sdk';
+import classNames from 'classnames';
+import { type FieldProps } from 'formik';
 import { includes } from 'lodash';
-import React, { FunctionComponent, memo, ReactNode, useCallback, useMemo } from 'react';
+import React, { type FunctionComponent, memo, type ReactNode, useCallback, useMemo } from 'react';
 
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 
@@ -25,6 +26,8 @@ export interface DynamicFormFieldProps {
     parentFieldName?: string;
     placeholder?: string;
     label?: ReactNode;
+    isFloatingLabelEnabled?: boolean;
+    themeV2?: boolean;
     onChange?(value: string | string[]): void;
 }
 
@@ -48,13 +51,34 @@ const DynamicFormField: FunctionComponent<DynamicFormFieldProps> = ({
     autocomplete,
     label,
     extraClass,
+    isFloatingLabelEnabled,
+    themeV2 = false,
 }) => {
     const fieldInputId = inputId || name;
     const fieldName = parentFieldName ? `${parentFieldName}.${name}` : name;
+    const isFloatingLabelSupportedFieldType = Boolean(
+        isFloatingLabelEnabled &&
+            (includes(['text', 'password', 'dropdown', 'date', 'multiline'], fieldType) ||
+                !fieldType),
+    );
+    const labelComponent = useMemo(() => {
+        let labelClassName = '';
 
-    const labelComponent = useMemo(
-        () => (
-            <Label htmlFor={fieldInputId} id={`${fieldInputId}-label`}>
+        if (themeV2) {
+            if (isFloatingLabelSupportedFieldType) {
+                labelClassName = 'floating-form-field-label';
+            } else {
+                labelClassName = 'body-medium';
+            }
+        }
+
+        return (
+            <Label
+                additionalClassName={labelClassName}
+                htmlFor={fieldInputId}
+                id={`${fieldInputId}-label`}
+                isFloatingLabelEnabled={isFloatingLabelSupportedFieldType}
+            >
                 {label || fieldLabel}
                 {!required && (
                     <>
@@ -65,9 +89,8 @@ const DynamicFormField: FunctionComponent<DynamicFormFieldProps> = ({
                     </>
                 )}
             </Label>
-        ),
-        [fieldInputId, fieldLabel, required, label],
-    );
+        );
+    }, [themeV2, fieldInputId, isFloatingLabelSupportedFieldType, label, fieldLabel, required]);
 
     const dynamicFormFieldType = useMemo((): DynamicFormFieldType => {
         if (fieldType === 'text') {
@@ -82,9 +105,8 @@ const DynamicFormField: FunctionComponent<DynamicFormFieldProps> = ({
             return secret ? DynamicFormFieldType.PASSWORD : DynamicFormFieldType.TEXT;
         }
 
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         return fieldType as DynamicFormFieldType;
-    }, [fieldType, type, name, secret]);
+    }, [fieldType, type, secret, name]);
 
     const renderInput = useCallback(
         ({ field }: FieldProps<string>) => (
@@ -94,28 +116,38 @@ const DynamicFormField: FunctionComponent<DynamicFormFieldProps> = ({
                 autoComplete={autocomplete}
                 fieldType={dynamicFormFieldType}
                 id={fieldInputId}
+                isFloatingLabelEnabled={isFloatingLabelSupportedFieldType}
                 max={max}
                 maxLength={maxLength || undefined}
                 min={min}
                 options={options && options.items}
                 placeholder={placeholder || (options && options.helperLabel)}
-                rows={options && options.rows}
+                rows={options?.rows}
+                themeV2={themeV2}
             />
         ),
         [
             fieldInputId,
+            autocomplete,
+            dynamicFormFieldType,
+            isFloatingLabelSupportedFieldType,
             max,
             maxLength,
             min,
             options,
             placeholder,
-            dynamicFormFieldType,
-            autocomplete,
+            themeV2,
         ],
     );
 
     return (
-        <div className={`dynamic-form-field ${extraClass || ''}`}>
+        <div
+            className={classNames(
+                'dynamic-form-field',
+                { 'floating-form-field': isFloatingLabelSupportedFieldType },
+                extraClass,
+            )}
+        >
             {fieldType === DynamicFormFieldType.CHECKBOX ? (
                 <CheckboxGroupFormField
                     id={fieldInputId}
@@ -123,11 +155,13 @@ const DynamicFormField: FunctionComponent<DynamicFormFieldProps> = ({
                     name={fieldName}
                     onChange={onChange}
                     options={(options && options.items) || []}
+                    themeV2={themeV2}
                 />
             ) : (
                 <FormField
                     id={fieldInputId}
                     input={renderInput}
+                    isFloatingLabelEnabled={isFloatingLabelSupportedFieldType}
                     label={labelComponent}
                     name={fieldName}
                     onChange={onChange}

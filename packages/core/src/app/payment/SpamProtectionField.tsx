@@ -1,11 +1,13 @@
-import { CheckoutSelectors } from '@bigcommerce/checkout-sdk';
+import { type CheckoutSelectors } from '@bigcommerce/checkout-sdk';
 import { noop } from 'lodash';
-import React, { Component, MouseEvent, ReactNode } from 'react';
+import React, { Component, type MouseEvent, type ReactNode } from 'react';
 
-import { CheckoutContextProps, withCheckout } from '../checkout';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps } from '@bigcommerce/checkout/payment-integration-api';
+import { LoadingOverlay } from '@bigcommerce/checkout/ui';
+
+import { withCheckout } from '../checkout';
 import { isErrorWithType } from '../common/error';
-import { TranslatedString } from '../locale';
-import { LoadingOverlay } from '../ui/loading';
 
 export interface SpamProtectionProps {
     didExceedSpamLimit?: boolean;

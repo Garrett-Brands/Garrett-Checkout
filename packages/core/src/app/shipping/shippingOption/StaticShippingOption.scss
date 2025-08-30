@@ -28,6 +28,16 @@
 .shippingOption-price {
     font-weight: fontWeight("bold");
     padding-left: spacing("half");
+
+    &.body-medium {
+        font-weight: fontWeight("medium");
+    }
+}
+
+.shippingOption-price-before-discount {
+    font-weight: fontWeight("normal");
+    text-decoration: line-through;
+    margin-right: spacing("quarter");
 }
 
 .shippingOption-transitTime {

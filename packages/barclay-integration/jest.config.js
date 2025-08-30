@@ -1,14 +1,12 @@
 module.exports = {
     displayName: 'barclay-integration',
     preset: '../../jest.preset.js',
-    globals: {
-        'ts-jest': {
-            tsconfig: '<rootDir>/tsconfig.spec.json',
-        },
-    },
     transform: {
-        '^.+\\.[tj]sx?$': 'ts-jest',
+        '^.+\\.[tj]sx?$': ['ts-jest', {
+            tsconfig: '<rootDir>/tsconfig.spec.json',
+            diagnostics: false,
+        }],
     },
-    moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
+    setupFilesAfterEnv: ['../../jest-setup.ts'],
     coverageDirectory: '../../coverage/packages/barclay-integration',
 };

@@ -1,4 +1,4 @@
-import { Checkout, CheckoutPayment } from '@bigcommerce/checkout-sdk';
+import { type Checkout, type CheckoutPayment } from '@bigcommerce/checkout-sdk';
 
 import { getCart } from '../cart/carts.mock';
 import { getCoupon } from '../coupon/coupons.mock';
@@ -37,26 +37,21 @@ export function getCheckout(): Checkout {
         createdTime: '2018-03-06T04:41:49+00:00',
         updatedTime: '2018-03-07T03:44:51+00:00',
         promotions: [],
+        channelId: 123456,
+        fees: [],
     };
 }
 
-export function getCheckoutWithPayments(): Checkout {
+export function getCheckoutWithPayments(providerId?: string): Checkout {
     return {
         ...getCheckout(),
-        payments: [getCheckoutPayment()],
+        payments: [getCheckoutPayment(providerId)],
     };
 }
 
-export function getCheckoutWithPromotions(): Checkout {
+export function getCheckoutPayment(providerId?: string): CheckoutPayment {
     return {
-        ...getCheckout(),
-        promotions: [getPromotion()],
-    };
-}
-
-export function getCheckoutPayment(): CheckoutPayment {
-    return {
-        providerId: 'amazonpay',
+        providerId: providerId || 'amazonpay',
         gatewayId: undefined,
         providerType: 'PAYMENT_TYPE_HOSTED',
         detail: {

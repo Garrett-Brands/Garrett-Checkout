@@ -1,9 +1,9 @@
-import { LanguageService } from '@bigcommerce/checkout-sdk';
+import { type LanguageService } from '@bigcommerce/checkout-sdk';
 import { memoize } from '@bigcommerce/memoize';
 import { cvv, expirationDate, number } from 'card-validator';
-import { object, ObjectSchema, string } from 'yup';
+import { object, type ObjectSchema, string } from 'yup';
 
-import { CreditCardFieldsetValues } from '@bigcommerce/checkout/payment-integration-api';
+import { type CreditCardFieldsetValues } from '@bigcommerce/checkout/payment-integration-api';
 
 export interface CreditCardValidationSchemaOptions {
     isCardCodeRequired: boolean;
@@ -42,7 +42,6 @@ export default memoize(function getCreditCardValidationSchema({
             .test({
                 message: language.translate('payment.credit_card_cvv_invalid_error'),
                 test(value) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                     const { card } = number(this.parent.ccNumber);
 
                     return cvv(value, card && card.code ? card.code.size : undefined).isValid;

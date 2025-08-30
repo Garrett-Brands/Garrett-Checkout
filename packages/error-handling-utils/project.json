@@ -1,0 +1,20 @@
+{
+  "name": "error-handling-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/error-handling-utils/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/error-handling-utils"],
+      "options": {
+        "jestConfig": "packages/error-handling-utils/jest.config.js"
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}

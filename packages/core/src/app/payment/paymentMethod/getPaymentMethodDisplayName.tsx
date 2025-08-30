@@ -1,4 +1,4 @@
-import { LanguageService, PaymentMethod } from '@bigcommerce/checkout-sdk';
+import { type LanguageService, type PaymentMethod } from '@bigcommerce/checkout-sdk';
 
 import PaymentMethodId from './PaymentMethodId';
 
@@ -12,6 +12,7 @@ export default function getPaymentMethodDisplayName(
 
         if (
             method.id === PaymentMethodId.PaypalCommerceCredit ||
+            method.id === PaymentMethodId.BigCommercePaymentsPayLater ||
             method.id === PaymentMethodId.BraintreePaypalCredit
         ) {
             const { payPalCreditProductBrandName } = method.initializationData;

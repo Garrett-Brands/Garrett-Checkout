@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 // @ts-nocheck
 import React, { ComponentType } from 'react';
+=======
+import React, { type ComponentType } from 'react';
+>>>>>>> staging
 
-import ResolvableComponent from './ResolvableComponent';
+import type ResolvableComponent from './ResolvableComponent';
 
 export default function toResolvableComponent<TProps extends Record<string, any>, TIdentifier>(
     // eslint-disable-next-line @typescript-eslint/naming-convention

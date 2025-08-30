@@ -1,0 +1,21 @@
+{
+  "name": "checkoutcom-integration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/checkoutcom-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/checkoutcom-integration"],
+      "options": {
+        "jestConfig": "packages/checkoutcom-integration/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:integration"]
+}

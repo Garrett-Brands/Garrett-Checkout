@@ -1,30 +1,28 @@
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
-import { LoadingSkeleton, LoadingSkeletonProps } from './LoadingSkeleton';
+import { LoadingSkeleton, type LoadingSkeletonProps } from './LoadingSkeleton';
 
-const AddressFormSkeleton: FunctionComponent<LoadingSkeletonProps> = ({ children, isLoading }) => {
+const AddressFormSkeleton: FunctionComponent<LoadingSkeletonProps> = ({
+    children,
+    isLoading,
+    renderWhileLoading,
+}) => {
     const skeleton = (
-        <div className="checkout-form">
-            <div className="form-legend-container">
-                <div className="address-form-heading-skeleton form-legend optimizedCheckout-headingSecondary" />
+        <>
+            <div className="address-form-skeleton">
+                <div className="label" />
             </div>
             <div className="address-form-skeleton">
-                <div className="name-fields-skeleton">
-                    <div className="skeleton-container">
-                        <div className="input-skeleton" />
-                    </div>
-                    <div className="skeleton-container">
-                        <div className="input-skeleton" />
-                    </div>
-                </div>
-                <div className="skeleton-container">
-                    <div className="input-skeleton" />
-                </div>
+                <div className="name" />
+                <div className="name" />
             </div>
-        </div>
+            <div className="address-form-skeleton">
+                <div className="address" />
+            </div>
+        </>
     );
 
-    return <LoadingSkeleton {...{ children, isLoading, skeleton }} />;
+    return <LoadingSkeleton {...{ children, isLoading, renderWhileLoading, skeleton }} />;
 };
 
 export default AddressFormSkeleton;

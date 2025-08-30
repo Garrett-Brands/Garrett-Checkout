@@ -1,13 +1,17 @@
-import React, { FunctionComponent, memo } from 'react';
+import React, { type FunctionComponent, memo } from 'react';
 
 import ViewPicker from './ViewPicker';
+
+interface QueryResults {
+    [key: string]: boolean;
+}
 
 const MobileView: FunctionComponent<{ children(matched: boolean): React.ReactNode }> = ({
     children,
 }) => {
     return (
         <ViewPicker>
-            {(matches: { mobile: boolean }) => {
+            {(matches: QueryResults) => {
                 return children(matches.mobile);
             }}
         </ViewPicker>

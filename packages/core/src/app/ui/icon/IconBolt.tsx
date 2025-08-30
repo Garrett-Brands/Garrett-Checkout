@@ -1,10 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
 import withIconContainer from './withIconContainer';
 
 const IconBolt: FunctionComponent = () => (
     <svg
         aria-labelledby="iconCardBoltTitle"
+        data-test="bolt-icon"
         height="12"
         role="img"
         viewBox="0 0 12 12"

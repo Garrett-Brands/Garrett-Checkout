@@ -1,0 +1,20 @@
+{
+  "name": "paypal-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/paypal-utils/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/paypal-utils"],
+      "options": {
+        "jestConfig": "packages/paypal-utils/jest.config.js"
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}

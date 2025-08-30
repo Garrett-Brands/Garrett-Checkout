@@ -1,0 +1,21 @@
+{
+  "name": "bluesnap-direct-integration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/bluesnap-direct-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/bluesnap-direct-integration"],
+      "options": {
+        "jestConfig": "packages/bluesnap-direct-integration/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:integration"]
+}

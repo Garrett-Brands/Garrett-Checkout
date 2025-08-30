@@ -1,16 +1,19 @@
-import { FormikProps, withFormik } from 'formik';
+import classNames from 'classnames';
+import { type FormikProps, withFormik } from 'formik';
 import { noop } from 'lodash';
-import React, { FunctionComponent, memo, useCallback } from 'react';
+import React, { type FunctionComponent, memo, useCallback } from 'react';
 import { object, string } from 'yup';
 
-import { preventDefault } from '../common/dom';
+import { preventDefault } from '@bigcommerce/checkout/dom-utils';
 import {
     TranslatedHtml,
     TranslatedLink,
     TranslatedString,
     withLanguage,
-    WithLanguageProps,
-} from '../locale';
+    type WithLanguageProps,
+} from '@bigcommerce/checkout/locale';
+import { useThemeContext } from '@bigcommerce/checkout/ui';
+
 import { Alert, AlertType } from '../ui/alert';
 import { Button, ButtonVariant } from '../ui/button';
 import { Fieldset, Form, Legend } from '../ui/form';
@@ -20,8 +23,10 @@ import EmailField from './EmailField';
 import getEmailValidationSchema from './getEmailValidationSchema';
 import mapErrorMessage from './mapErrorMessage';
 import PasswordField from './PasswordField';
+import { RedirectToStorefrontLogin } from './RedirectToStorefrontLogin';
 
 export interface LoginFormProps {
+    isBuyNowCart: boolean;
     canCancel?: boolean;
     continueAsGuestButtonLabelId: string;
     email?: string;
@@ -29,12 +34,14 @@ export interface LoginFormProps {
     isSignInEmailEnabled?: boolean;
     isSendingSignInEmail?: boolean;
     isSigningIn?: boolean;
+    isExecutingPaymentMethodCheckout?: boolean;
     signInError?: Error;
     signInEmailError?: Error;
     viewType?: Omit<CustomerViewType, 'guest'>;
     passwordlessLogin?: boolean;
     shouldShowCreateAccountLink?: boolean;
     isFloatingLabelEnabled?: boolean;
+    shouldRedirectToStorefrontForAuth: boolean;
     onCancel?(): void;
     onCreateAccount?(): void;
     onChangeEmail?(email: string): void;
@@ -51,12 +58,14 @@ export interface LoginFormValues {
 const LoginForm: FunctionComponent<
     LoginFormProps & WithLanguageProps & FormikProps<LoginFormValues>
 > = ({
+    isBuyNowCart,
     canCancel,
     continueAsGuestButtonLabelId,
     forgotPasswordUrl,
     email,
     isSignInEmailEnabled,
     isSigningIn,
+    isExecutingPaymentMethodCheckout,
     language,
     onCancel = noop,
     onChangeEmail,
@@ -66,8 +75,11 @@ const LoginForm: FunctionComponent<
     signInError,
     shouldShowCreateAccountLink,
     isFloatingLabelEnabled,
+    shouldRedirectToStorefrontForAuth,
     viewType = CustomerViewType.Login,
 }) => {
+    const { themeV2 } = useThemeContext();
+
     const changeEmailLink = useCallback(() => {
         if (!email) {
             return null;
@@ -127,21 +139,21 @@ const LoginForm: FunctionComponent<
 
                 {(viewType === CustomerViewType.Login ||
                     viewType === CustomerViewType.EnforcedLogin) && (
-                    <EmailField onChange={onChangeEmail} isFloatingLabelEnabled={isFloatingLabelEnabled} />
+                    <EmailField isFloatingLabelEnabled={isFloatingLabelEnabled} onChange={onChangeEmail} />
                 )}
 
-                <PasswordField isFloatingLabelEnabled={isFloatingLabelEnabled} />
+                {!shouldRedirectToStorefrontForAuth && <PasswordField isFloatingLabelEnabled={isFloatingLabelEnabled} />}
 
-                <p className="form-legend-container">
+                <p className={classNames('form-legend-container', { 'body-cta': themeV2 })}>
                     <span>
-                        { isSignInEmailEnabled &&
+                        { isSignInEmailEnabled && !isBuyNowCart &&
                             <TranslatedLink
                                 id="login_email.link"
                                 onClick={ onSendLoginEmail }
                                 testId="customer-signin-link"
                             />
                         }
-                        { !isSignInEmailEnabled &&
+                        { !isSignInEmailEnabled && !shouldRedirectToStorefrontForAuth &&
                             <a
                                 data-test="forgot-password-link"
                                 href={ forgotPasswordUrl }
@@ -163,19 +175,28 @@ const LoginForm: FunctionComponent<
                 </p>
 
                 <div className="form-actions">
-                    <Button
-                        disabled={isSigningIn}
-                        id="checkout-customer-continue"
-                        testId="customer-continue-button"
-                        type="submit"
-                        variant={ButtonVariant.Primary}
+                    {shouldRedirectToStorefrontForAuth ?
+                        <RedirectToStorefrontLogin
+                            isDisabled={Boolean(isSigningIn || isExecutingPaymentMethodCheckout)}
+                            isLoading={Boolean(isSigningIn || isExecutingPaymentMethodCheckout)}
+                        />
+                        :
+                        <Button
+                            className={themeV2 ? 'body-bold' : ''}
+                            disabled={isSigningIn || isExecutingPaymentMethodCheckout}
+                            id="checkout-customer-continue"
+                            isLoading={isSigningIn || isExecutingPaymentMethodCheckout}
+                            testId="customer-continue-button"
+                            type="submit"
+                            variant={ButtonVariant.Primary}
                     >
                         <TranslatedString id="customer.sign_in_action" />
-                    </Button>
+                    </Button>}
 
                     {viewType === CustomerViewType.SuggestedLogin && (
                         <a
-                            className="button optimizedCheckout-buttonSecondary"
+                            className={classNames('button optimizedCheckout-buttonSecondary',
+                                { 'body-bold': themeV2 })}
                             data-test="customer-guest-continue"
                             href="#"
                             id="checkout-guest-continue"
@@ -189,7 +210,8 @@ const LoginForm: FunctionComponent<
                         viewType !== CustomerViewType.EnforcedLogin &&
                         viewType !== CustomerViewType.SuggestedLogin && (
                             <a
-                                className="button optimizedCheckout-buttonSecondary"
+                            className={classNames('button optimizedCheckout-buttonSecondary',
+                                { 'body-bold': themeV2 })}
                                 data-test="customer-cancel-button"
                                 href="#"
                                 id="checkout-customer-cancel"

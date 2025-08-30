@@ -1,8 +1,10 @@
 import {
-    GatewayOrderPayment,
-    GiftCertificateOrderPayment,
-    Order,
-    OrderPayment,
+    type GatewayOrderPayment,
+    type GiftCertificateOrderPayment,
+    type Order,
+    type OrderFee,
+    type OrderPayment,
+    type OrderShippingConsignment,
 } from '@bigcommerce/checkout-sdk';
 
 import { getBillingAddress } from '../billing/billingAddresses.mock';
@@ -51,6 +53,7 @@ export function getOrder(): Order {
         orderAmountAsInteger: 19000,
         orderId: 295,
         payments: [getGatewayOrderPayment(), getGiftCertificateOrderPayment()],
+        fees: [],
     };
 }
 
@@ -68,6 +71,59 @@ export function getOrderWithMandateURL(): Order {
     order.payments = [getGatewayOrderPaymentWithMandateURL(), getGiftCertificateOrderPayment()];
 
     return order;
+}
+
+const mockOrderShippingConsignment: OrderShippingConsignment = {
+    lineItems: [
+        { id: 101 },
+        { id: 102 },
+    ],
+    shippingAddressId: 2001,
+    firstName: "John",
+    lastName: "Doe",
+    company: "Tech Solutions",
+    address1: "123 Main St",
+    address2: "Apt 4B",
+    city: "Sydney",
+    stateOrProvince: "NSW",
+    postalCode: "2000",
+    country: "Australia",
+    countryCode: "AU",
+    email: "john.doe@example.com",
+    phone: "+61 400 123 456",
+    itemsTotal: 2,
+    itemsShipped: 2,
+    shippingMethod: "Express Shipping",
+    baseCost: 20.00,
+    costExTax: 18.18,
+    costIncTax: 20.00,
+    costTax: 1.82,
+    costTaxClassId: 1,
+    baseHandlingCost: 5.00,
+    handlingCostExTax: 4.55,
+    handlingCostIncTax: 5.00,
+    handlingCostTax: 0.45,
+    handlingCostTaxClassId: 1,
+    shippingZoneId: 101,
+    shippingZoneName: "Australia - NSW",
+    customFields: [],
+    discounts: [],
+};
+
+export function getOrderWithShippingDiscount(): Order {
+    return {
+        ...getOrder(),
+        consignments: {
+            shipping: [
+                {...mockOrderShippingConsignment, discounts: [{ id: 1, amount: 2, code: 'coupon-shipping-discount', }, { id: 2, amount: 2, code: null, }]},
+                {...mockOrderShippingConsignment, discounts: [{ id: 1, amount: 3, code: 'coupon-shipping-discount', }, { id: 2, amount: 3, code: null, }, { id: 3, amount: 3, code: null, }]},
+            ]
+        },
+        coupons: [getShippingCoupon()],
+        shippingCostTotal: 10,
+        shippingCostBeforeDiscount: 20,
+        payments: [getGatewayOrderPayment()],
+    };
 }
 
 export function getGatewayOrderPayment(): GatewayOrderPayment {
@@ -133,4 +189,14 @@ export function getGiftCertificateOrderPayment(): GiftCertificateOrderPayment {
             remaining: 3,
         },
     };
+}
+
+export function getOrderFee(): OrderFee {
+    return {
+        id: 1,
+        cost: 2.0,
+        type: 'custom_fee',
+        source: 'somewhere',
+        customerDisplayName: 'display name for customer',
+    }
 }

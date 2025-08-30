@@ -1,6 +1,10 @@
 {
     "name": "checkout-js",
+<<<<<<< HEAD
     "version": "1.406.10-prerelease.1682655727012",
+=======
+    "version": "1.660.1",
+>>>>>>> staging
     "authors": [
         "BigCommerce"
     ],

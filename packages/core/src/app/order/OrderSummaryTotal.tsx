@@ -1,6 +1,6 @@
-import React, { FunctionComponent } from 'react';
+import React, { type FunctionComponent } from 'react';
 
-import { TranslatedString, withCurrency, WithCurrencyProps } from '../locale';
+import { TranslatedString, withCurrency, type WithCurrencyProps } from '@bigcommerce/checkout/locale';
 
 import OrderSummaryPrice from './OrderSummaryPrice';
 
@@ -33,6 +33,7 @@ const OrderSummaryTotal: FunctionComponent<OrderSummaryTotalProps & WithCurrency
             <OrderSummaryPrice
                 amount={orderAmount}
                 className="cart-priceItem--total"
+                isOrderTotal
                 label={label}
                 superscript={hasDifferentCurrency ? '*' : undefined}
                 testId="cart-total"

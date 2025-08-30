@@ -7,20 +7,40 @@
     justify-content: space-between;
 }
 
+.paymentProviderHeader-container-googlePay {
+    align-items: center;
+}
+
+.paymentProviderHeader-subtitleContainer {
+    flex-basis: 100%;
+}
+
 .paymentProviderHeader-nameContainer {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .paymentProviderHeader-img {
     align-self: center;
     display: flex;
     height: fontSize("large");
+    object-fit: contain;
 
     + .paymentProviderHeader-name {
         margin-left: spacing("half");
         white-space: nowrap;
     }
+}
+
+.paymentProviderHeader-img-applePay {
+    height: fontSize("larger");
+    margin-top: spacing("eighth");
+    margin-left: spacing("quarter");
+}
+
+.paymentProviderHeader-img-googlePay {
+    height: fontSize("larger");
 }
 
 .googlePay-logo {
@@ -44,15 +64,19 @@
     flex-shrink: 1;
 }
 
+@media (max-width: $screen-xsmall) {
+    div[data-test="payment-method-sezzle"] {
+        .paymentProviderHeader-name {
+            visibility: hidden;
+        }
+    }
+}
+
 .paymentMethod--creditCard,
 .paymentMethod--hosted,
 .paymentMethod--walletButton {
     clear: both;
-    padding: (spacing("base") / 1.5) 0;
-}
-
-.chasePay--container {
-    margin-top: remCalc(5px);
+    padding: $payment-step-spacing-top 0;
 }
 
 %button-masterpass-base {

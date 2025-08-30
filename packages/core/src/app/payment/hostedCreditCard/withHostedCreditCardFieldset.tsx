@@ -1,20 +1,20 @@
 import {
-    CardInstrument,
-    HostedFormOptions,
-    Instrument,
-    PaymentMethod,
+    type CardInstrument,
+    type Instrument,
+    type LegacyHostedFormOptions,
+    type PaymentMethod,
 } from '@bigcommerce/checkout-sdk';
 import { compact, forIn } from 'lodash';
-import React, { ComponentType, FunctionComponent, ReactNode, useCallback, useState } from 'react';
-import { ObjectSchema } from 'yup';
+import React, { type ComponentType, type FunctionComponent, type ReactNode, useCallback, useState } from 'react';
+import { type ObjectSchema } from 'yup';
 
-import { PaymentFormValues } from '@bigcommerce/checkout/payment-integration-api';
+import { type MapToPropsFactory } from '@bigcommerce/checkout/legacy-hoc';
+import { withLanguage, type WithLanguageProps } from '@bigcommerce/checkout/locale';
+import { type CheckoutContextProps, type PaymentFormValues } from '@bigcommerce/checkout/payment-integration-api';
 
-import { CheckoutContextProps, withCheckout } from '../../checkout';
-import { connectFormik, ConnectFormikProps } from '../../common/form';
-import { MapToPropsFactory } from '../../common/hoc';
-import { withLanguage, WithLanguageProps } from '../../locale';
-import { withForm, WithFormProps } from '../../ui/form';
+import { withCheckout } from '../../checkout';
+import { connectFormik, type ConnectFormikProps } from '../../common/form';
+import { withForm, type WithFormProps } from '../../ui/form';
 import {
     CreditCardCustomerCodeField,
     CreditCardInputStylesType,
@@ -27,10 +27,10 @@ import {
 } from '../storedInstrument';
 
 import getHostedCreditCardValidationSchema, {
-    HostedCreditCardValidationSchemaShape,
+    type HostedCreditCardValidationSchemaShape,
 } from './getHostedCreditCardValidationSchema';
 import getHostedInstrumentValidationSchema, {
-    HostedInstrumentValidationSchemaShape,
+    type HostedInstrumentValidationSchemaShape,
 } from './getHostedInstrumentValidationSchema';
 import HostedCreditCardFieldset from './HostedCreditCardFieldset';
 import HostedCreditCardValidation from './HostedCreditCardValidation';
@@ -44,7 +44,7 @@ export interface WithInjectedHostedCreditCardFieldsetProps {
     hostedFieldset: ReactNode;
     hostedStoredCardValidationSchema: ObjectSchema<HostedInstrumentValidationSchemaShape>;
     hostedValidationSchema: ObjectSchema<HostedCreditCardValidationSchemaShape>;
-    getHostedFormOptions(selectedInstrument?: CardInstrument): Promise<HostedFormOptions>;
+    getHostedFormOptions(selectedInstrument?: CardInstrument): Promise<LegacyHostedFormOptions>;
     getHostedStoredCardValidationFieldset(selectedInstrument?: CardInstrument): ReactNode;
 }
 
@@ -89,7 +89,7 @@ export default function withHostedCreditCardFieldset<
 
         const getHostedFormOptions: (
             selectedInstrument?: CardInstrument,
-        ) => Promise<HostedFormOptions> = useCallback(
+        ) => Promise<LegacyHostedFormOptions> = useCallback(
             async (selectedInstrument) => {
                 const styleProps = ['color', 'fontFamily', 'fontSize', 'fontWeight'];
                 const isInstrumentCardNumberRequired = selectedInstrument
@@ -292,7 +292,7 @@ const mapFromCheckoutProps: MapToPropsFactory<
     WithCheckoutContextProps,
     WithHostedCreditCardFieldsetProps & ConnectFormikProps<PaymentFormValues>
 > = () => {
-    return ({ checkoutState }, { isUsingMultiShipping = false, method }) => {
+    return ({ checkoutState }, { method }) => {
         const {
             data: { getConfig, getCustomer },
         } = checkoutState;
@@ -307,7 +307,6 @@ const mapFromCheckoutProps: MapToPropsFactory<
         const isInstrumentFeatureAvailableProp = isInstrumentFeatureAvailable({
             config,
             customer,
-            isUsingMultiShipping,
             paymentMethod: method,
         });
 
